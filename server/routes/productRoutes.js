@@ -6,6 +6,7 @@ const {
   getProducts,
   addProduct,
   updateExistingProduct,
+  deleteExistingProduct,
 } = require('../controllers/productController')
 
 router.get('/', getProducts)
@@ -15,5 +16,7 @@ router.get('/', getProducts)
 router.post('/', addProduct)
 
 router.put('/:id', updateExistingProduct)
+
+router.delete('/:id', deleteExistingProduct)
 
 module.exports = router

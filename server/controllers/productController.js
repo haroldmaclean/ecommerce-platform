@@ -2,6 +2,7 @@ const {
   getAllProducts,
   createProduct,
   updateProduct,
+  deleteProduct,
 } = require('../services/productService')
 
 const getProducts = async (req, res) => {
@@ -21,4 +22,15 @@ const updateExistingProduct = async (req, res) => {
   res.json(updatedProduct)
 }
 
-module.exports = { getProducts, addProduct, updateExistingProduct }
+const deleteExistingProduct = async (req, res) => {
+  const { id } = req.params
+  const deletedProduct = await deleteProduct(id)
+  res.json(deletedProduct)
+}
+
+module.exports = {
+  getProducts,
+  addProduct,
+  updateExistingProduct,
+  deleteExistingProduct,
+}
