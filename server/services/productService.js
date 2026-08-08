@@ -7,6 +7,10 @@ const getAllProducts = async () => {
   // return 'Products route is working!'
 }
 
+/*const getAllProducts = async () => {
+  throw new Error('Database connection failed')
+}*/
+
 const createProduct = async (productData) => {
   const product = await Product.create(productData)
 
