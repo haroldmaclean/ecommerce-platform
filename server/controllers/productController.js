@@ -22,6 +22,8 @@ const getProducts = asyncHandler(async (req, res) => {
 }*/
 
 const addProduct = asyncHandler(async (req, res) => {
+  //console.log('CONTROLLER WAS REACHED', req.body)
+
   const product = await createProduct(req.body)
   res.status(201).json(product)
 })
