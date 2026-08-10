@@ -5,6 +5,7 @@ const {
   registerUser,
   login,
   getProfile,
+  changeUserRole,
 } = require('../controllers/userController')
 
 // 2. Import Validation Middleware & Schemas
@@ -12,62 +13,32 @@ const validate = require('../middlewares/validationMiddleware')
 const {
   registerUserSchema,
   loginUserSchema,
+  updateUserRoleSchema,
 } = require('../validators/userValidator')
 
-// 3. Import Auth Middleware
+// 3. Import Auth & Authorization Middlewares
 const authenticate = require('../middlewares/authMiddleware')
+const authorize = require('../middlewares/authorizationMiddleware')
 
 const router = express.Router()
 
 // Protected Route (Requires valid Bearer Token in Authorization Header)
 router.get('/profile', authenticate, getProfile)
 
+// Admin Protected Route: Change User Role
+router.patch(
+  '/:id/role',
+  authenticate,
+  authorize('admin'),
+  validate(updateUserRoleSchema),
+  changeUserRole,
+)
+
 // Public Routes
 router.post('/register', validate(registerUserSchema), registerUser)
-router.post('/login', validate(loginUserSchema), login)
-
-module.exports = router
-
-/*const express = require('express')
-
-const { registerUser, login } = require('../controllers/userController')
-
-const validate = require('../middlewares/validationMiddleware')
-
-const {
-  registerUserSchema,
-  loginUserSchema,
-} = require('../validators/userValidator')
-
-const router = express.Router()
-
-router.post('/register', validate(registerUserSchema), registerUser)
 
 router.post('/login', validate(loginUserSchema), login)
 
-module.exports = router
-*/
-
-/*const express = require('express')
-
-const router = express.Router()
-
-const { registerUser, login } = require('../controllers/userController')
-
-const validate = require('../middlewares/validationMiddleware')
-
-const {
-  registerUserSchema,
-  loginUserSchema,
-} = require('../validators/userValidator')
-
-const authenticate = require('../middlewares/authMiddleware')
-
-router.get('/profile', authenticate, getProfile)
-
-router.post('/register', validate(registerUserSchema), registerUser)
-
-router.post('/login', validate(loginUserSchema), login)
+//router.patch('/:id/role', authenticate, authorize('admin'), changeUserRole)
 
 module.exports = router
-*/

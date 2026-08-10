@@ -14,18 +14,14 @@ router.get('/', getProducts)
 
 const validate = require('../middlewares/validationMiddleware')
 
+const authenticate = require('../middlewares/authMiddleware')
+
+const authorize = require('../middlewares/authorizationMiddleware')
+
 const {
   createProductSchema,
   updateProductSchema,
 } = require('../validators/productValidator')
-
-//const productSchema = require('../validators/productValidator')
-
-/* router.get('/', (req, res) => {
-   res.send('Products route is working!')
- })*/
-
-//router.post('/', addProduct)
 
 router.post('/', validate(createProductSchema), addProduct)
 
@@ -33,6 +29,6 @@ router.post('/', validate(createProductSchema), addProduct)
 
 router.patch('/:id', validate(updateProductSchema), updateExistingProduct)
 
-router.delete('/:id', deleteExistingProduct)
+router.delete('/:id', authenticate, authorize('admin'), deleteExistingProduct)
 
 module.exports = router

@@ -14,7 +14,12 @@ const loginUserSchema = Joi.object({
   password: Joi.string().required(),
 })
 
+const updateUserRoleSchema = Joi.object({
+  role: Joi.string().valid('customer', 'admin').required(),
+})
+
 module.exports = {
   registerUserSchema,
   loginUserSchema,
+  updateUserRoleSchema,
 }

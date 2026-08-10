@@ -15,8 +15,15 @@ const createUser = async (userData) => {
 
   const hashedPassword = await bcrypt.hash(userData.password, 10)
 
-  const user = await User.create({
+  /*const user = await User.create({
     ...userData,
+    password: hashedPassword,
+  })
+  */
+
+  const user = await User.create({
+    name: userData.name,
+    email: userData.email,
     password: hashedPassword,
   })
 
@@ -58,7 +65,22 @@ const loginUser = async (email, password) => {
   }
 }
 
+const updateUserRole = async (userId, role) => {
+  const user = await User.findById(userId)
+
+  if (!user) {
+    throw new Error('User not found')
+  }
+
+  user.role = role
+
+  await user.save()
+
+  return user
+}
+
 module.exports = {
   createUser,
   loginUser,
+  updateUserRole,
 }
