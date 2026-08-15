@@ -1,7 +1,8 @@
 const Product = require('../models/Product')
 
 const getAllProducts = async () => {
-  const products = await Product.find()
+  const products = await Product.find().populate('category')
+  //const products = await Product.find()
 
   return products
   // return 'Products route is working!'

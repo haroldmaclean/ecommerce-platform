@@ -7,7 +7,7 @@ const productFields = {
 
   description: Joi.string(),
 
-  category: Joi.string(),
+  category: Joi.string().hex().length(24),
 
   stock: Joi.number().integer().min(0),
 }
@@ -28,20 +28,3 @@ module.exports = {
   createProductSchema,
   updateProductSchema,
 }
-
-/*const Joi = require('joi')
-
-const productSchema = Joi.object({
-  name: Joi.string().required(),
-
-  price: Joi.number().positive().required(),
-
-  description: Joi.string().required(),
-
-  category: Joi.string().required(),
-
-  stock: Joi.number().integer().min(0).required(),
-})
-
-module.exports = productSchema
-*/
