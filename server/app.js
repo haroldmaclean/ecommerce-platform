@@ -17,6 +17,14 @@ const errorHandler = require('./middlewares/errorHandler')
 
 const app = express()
 
+// API status / health check
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'E-commerce API is running',
+  })
+})
+
 // Stripe webhook MUST receive raw body
 app.post(
   '/api/payments/webhook',
