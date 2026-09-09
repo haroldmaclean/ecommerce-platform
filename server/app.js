@@ -1,4 +1,7 @@
 const express = require('express')
+
+const cors = require('cors') // 👈 1. ADDED: Require cors package
+
 const productRoutes = require('./routes/productRoutes')
 
 const userRoutes = require('./routes/userRoutes')
@@ -16,6 +19,18 @@ const paymentWebhookController = require('./controllers/paymentWebhookController
 const errorHandler = require('./middlewares/errorHandler')
 
 const app = express()
+
+// 👈 2. ADDED: Enable CORS for localhost and future deployments
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      // Add your Vercel frontend URL here later once deployed
+    ],
+    credentials: true,
+  }),
+)
 
 // API status / health check
 app.get('/', (req, res) => {
