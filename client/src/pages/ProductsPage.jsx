@@ -1,12 +1,53 @@
 import { useEffect } from 'react'
 import { getProducts } from '../api/productApi'
 
-function ProductsPage() {
+import ProductCard from '../components/ProductCard'
+
+function ProductsPage({ products, setProducts, onAddToCart }) {
   useEffect(() => {
     async function loadProducts() {
-      const products = await getProducts()
+      const data = await getProducts()
 
-      console.log(products)
+      setProducts(data)
+    }
+
+    loadProducts()
+  }, [])
+
+  return (
+    <main>
+      <h1>Our Products</h1>
+
+      <p>Total products: {products.length}</p>
+
+      <div>
+        {products.map((product) => (
+          <div key={product._id}>
+            <ProductCard
+              key={product._id}
+              product={product}
+              onAddToCart={onAddToCart}
+            />
+          </div>
+        ))}
+      </div>
+    </main>
+  )
+}
+
+export default ProductsPage
+
+/*import { useEffect, useState } from 'react'
+import { getProducts } from '../api/productApi'
+
+function ProductsPage() {
+  const [products, setProducts] = useState([])
+
+  useEffect(() => {
+    async function loadProducts() {
+      const data = await getProducts()
+
+      setProducts(data)
     }
 
     loadProducts()
@@ -14,8 +55,16 @@ function ProductsPage() {
   return (
     <main>
       <h1>Our Products</h1>
-      <p>Browse everything in our store.</p>
+      <p>Total products: {products.length}</p>
+      <div>
+        {products.map((product) => (
+          <div key={product._id}>
+            <h2>{product.name}</h2>
+            <p>Price: ${product.price}</p>
+          </div>
+        ))}
+      </div>
     </main>
   )
 }
-export default ProductsPage
+export default ProductsPage*/
