@@ -16,7 +16,15 @@ function Navbar() {
           </NavLink>
         </li>
 
-        <li>Cart</li>
+        <li>
+          {' '}
+          <NavLink
+            to='/cart'
+            className={({ isActive }) => (isActive ? 'active' : '')}
+          >
+            Cart
+          </NavLink>
+        </li>
       </ul>
     </nav>
   )
