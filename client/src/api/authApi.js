@@ -1,48 +1,33 @@
+const API_URL = 'https://ecommerce-platform-api-2ze0.onrender.com/api/users'
+
 export async function loginUser(email, password) {
-  const response = await fetch(
-    'https://ecommerce-platform-api-2ze0.onrender.com/api/users/login',
-    {
-      method: 'POST',
+  const response = await fetch(`${API_URL}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
 
-      headers: {
-        'Content-Type': 'application/json',
-      },
-
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    },
-  )
+  const data = await response.json()
 
   if (!response.ok) {
-    throw new Error('Login failed')
+    throw new Error(data.message || 'Login failed')
   }
 
-  return response.json()
+  return data
 }
 
 export async function registerUser(name, email, password) {
-  const response = await fetch(
-    'https://ecommerce-platform-api-2ze0.onrender.com/api/users/register',
-    {
-      method: 'POST',
+  const response = await fetch(`${API_URL}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password }),
+  })
 
-      headers: {
-        'Content-Type': 'application/json',
-      },
-
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-      }),
-    },
-  )
+  const data = await response.json()
 
   if (!response.ok) {
-    throw new Error('Registration failed')
+    throw new Error(data.message || 'Registration failed')
   }
 
-  return response.json()
+  return data
 }
