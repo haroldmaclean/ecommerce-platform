@@ -9,11 +9,23 @@ import CartPage from './pages/CartPage'
 
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
+import LogoutPage from './pages/LogoutPage'
+
+import {
+  addToCart,
+  getCart,
+  updateCartItem,
+  removeCartItem,
+} from './api/cartApi'
+import { getStoredToken } from './api/authApi'
 
 import './App.css'
 
 function App() {
   const [products, setProducts] = useState([])
+  const [token, setToken] = useState(() => {
+    return getStoredToken()
+  })
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('cart')
@@ -24,69 +36,178 @@ function App() {
   })
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
+    async function loadCart() {
+      const storedToken = getStoredToken()
 
-  function handleAddToCart(product) {
-    setCart((currentCart) => {
-      const existingItem = currentCart.find(
-        (item) => item.product._id === product._id,
-      )
+      if (!storedToken) {
+        const savedCart = localStorage.getItem('cart')
 
-      if (existingItem) {
-        return currentCart.map((item) =>
-          item.product._id === product._id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-              }
-            : item,
-        )
+        if (savedCart) {
+          setCart(JSON.parse(savedCart))
+        } else {
+          setCart([])
+        }
+
+        return
       }
 
-      return [
-        ...currentCart,
-        {
-          product: product,
-          quantity: 1,
-        },
-      ]
-    })
+      try {
+        const serverCart = await getCart(storedToken)
+
+        setCart(serverCart.items || [])
+      } catch (error) {
+        console.error('Failed to load authenticated cart:', error)
+      }
+    }
+
+    loadCart()
+  }, [token])
+
+  /*useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])*/
+
+  useEffect(() => {
+    if (!token) {
+      localStorage.setItem('cart', JSON.stringify(cart))
+    }
+  }, [cart, token])
+
+  async function handleAddToCart(product) {
+    const storedToken = getStoredToken()
+
+    if (!storedToken) {
+      setCart((currentCart) => {
+        const existingItem = currentCart.find(
+          (item) => item.product._id === product._id,
+        )
+
+        if (existingItem) {
+          return currentCart.map((item) =>
+            item.product._id === product._id
+              ? {
+                  ...item,
+                  quantity: item.quantity + 1,
+                }
+              : item,
+          )
+        }
+
+        return [
+          ...currentCart,
+          {
+            product: product,
+            quantity: 1,
+          },
+        ]
+      })
+
+      return
+    }
+
+    try {
+      const serverCart = await addToCart(storedToken, product._id, 1)
+
+      setCart(serverCart.items || [])
+    } catch (error) {
+      console.error('Failed to add item to cart:', error)
+    }
   }
 
-  function handleRemoveFromCart(productId) {
+  async function handleRemoveFromCart(productId) {
+    const storedToken = getStoredToken()
+
+    /*
+     * ANONYMOUS
+     */
+    if (!storedToken) {
+      setCart((currentCart) =>
+        currentCart.filter((item) => item.product._id !== productId),
+      )
+
+      return
+    }
+
+    /*
+     * AUTHENTICATED
+     */
+    try {
+      const serverCart = await removeCartItem(storedToken, productId)
+
+      setCart(serverCart.items || [])
+    } catch (error) {
+      console.error('Failed to remove item from cart:', error)
+    }
+  }
+  /*function handleRemoveFromCart(productId) {
     setCart((currentCart) =>
       currentCart.filter((item) => item.product._id !== productId),
     )
+  }*/
+
+  async function handleUpdateCartQuantity(productId, newQuantity) {
+    if (newQuantity < 1) {
+      return
+    }
+
+    const storedToken = getStoredToken()
+
+    /*
+     * ANONYMOUS
+     */
+    if (!storedToken) {
+      setCart((currentCart) =>
+        currentCart.map((item) =>
+          item.product._id === productId
+            ? {
+                ...item,
+                quantity: newQuantity,
+              }
+            : item,
+        ),
+      )
+
+      return
+    }
+
+    /*
+     * AUTHENTICATED
+     */
+    try {
+      const serverCart = await updateCartItem(
+        storedToken,
+        productId,
+        newQuantity,
+      )
+
+      setCart(serverCart.items || [])
+    } catch (error) {
+      console.error('Failed to update cart:', error)
+    }
   }
 
-  function handleUpdateCartQuantity(productId, newQuantity) {
+  /*function handleUpdateCartQuantity(productId, newQuantity) {
+    if (newQuantity < 1) {
+      return
+    }
+
     setCart((currentCart) =>
       currentCart.map((item) =>
         item.product._id === productId
           ? {
               ...item,
-              quantity: Math.max(1, newQuantity),
+              quantity: newQuantity,
             }
           : item,
       ),
     )
-  }
+  }*/
 
   return (
     <>
       <Routes>
         <Route path='/' element={<HomePage />} />
-        <Route
-          path='/cart'
-          element={
-            <CartPage
-              cart={cart}
-              onRemoveFromCart={handleRemoveFromCart}
-              onUpdateCartQuantity={handleUpdateCartQuantity}
-            />
-          }
-        />
+
         <Route
           path='/products'
           element={
@@ -97,8 +218,31 @@ function App() {
             />
           }
         />
-        <Route path='/login' element={<LoginPage />} />
+
+        <Route
+          path='/cart'
+          element={
+            <CartPage
+              cart={cart}
+              onRemoveFromCart={handleRemoveFromCart}
+              onUpdateCartQuantity={handleUpdateCartQuantity}
+            />
+          }
+        />
+
         <Route path='/register' element={<RegisterPage />} />
+
+        <Route
+          path='/login'
+          element={
+            <LoginPage cart={cart} setCart={setCart} setToken={setToken} />
+          }
+        />
+
+        <Route
+          path='/logout'
+          element={<LogoutPage setToken={setToken} setCart={setCart} />}
+        />
       </Routes>
     </>
   )

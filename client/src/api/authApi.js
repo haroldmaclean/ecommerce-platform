@@ -31,3 +31,25 @@ export async function registerUser(name, email, password) {
 
   return data
 }
+
+export async function getProfile(token) {
+  const response = await fetch(`${API_URL}/profile`, {
+    method: 'GET',
+
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to get profile')
+  }
+
+  return data
+}
+
+export function getStoredToken() {
+  return localStorage.getItem('token')
+}
