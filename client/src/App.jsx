@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { setCart } from './features/cart/cartSlice'
 
 import { Routes, Route } from 'react-router-dom'
 
@@ -11,12 +14,9 @@ import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import LogoutPage from './pages/LogoutPage'
 
-import {
-  addToCart,
-  getCart,
-  updateCartItem,
-  removeCartItem,
-} from './api/cartApi'
+import Counter from './features/counter/Counter'
+
+import { getCart } from './api/cartApi'
 import { getStoredToken } from './api/authApi'
 
 import './App.css'
@@ -27,13 +27,9 @@ function App() {
     return getStoredToken()
   })
 
-  const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      return JSON.parse(savedCart)
-    }
-    return []
-  })
+  const dispatch = useDispatch()
+
+  const reduxCart = useSelector((state) => state.cart.items)
 
   useEffect(() => {
     async function loadCart() {
@@ -54,195 +50,42 @@ function App() {
       try {
         const serverCart = await getCart(storedToken)
 
-        setCart(serverCart.items || [])
+        dispatch(setCart(serverCart.items || []))
       } catch (error) {
         console.error('Failed to load authenticated cart:', error)
       }
     }
 
     loadCart()
-  }, [token])
-
-  /*useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])*/
+  }, [token, dispatch])
 
   useEffect(() => {
     if (!token) {
-      localStorage.setItem('cart', JSON.stringify(cart))
+      localStorage.setItem('cart', JSON.stringify(reduxCart))
     }
-  }, [cart, token])
-
-  async function handleAddToCart(product) {
-    const storedToken = getStoredToken()
-
-    if (!storedToken) {
-      setCart((currentCart) => {
-        const existingItem = currentCart.find(
-          (item) => item.product._id === product._id,
-        )
-
-        if (existingItem) {
-          return currentCart.map((item) =>
-            item.product._id === product._id
-              ? {
-                  ...item,
-                  quantity: item.quantity + 1,
-                }
-              : item,
-          )
-        }
-
-        return [
-          ...currentCart,
-          {
-            product: product,
-            quantity: 1,
-          },
-        ]
-      })
-
-      return
-    }
-
-    try {
-      const serverCart = await addToCart(storedToken, product._id, 1)
-
-      setCart(serverCart.items || [])
-    } catch (error) {
-      console.error('Failed to add item to cart:', error)
-    }
-  }
-
-  async function handleRemoveFromCart(productId) {
-    const storedToken = getStoredToken()
-
-    /*
-     * ANONYMOUS
-     */
-    if (!storedToken) {
-      setCart((currentCart) =>
-        currentCart.filter((item) => item.product._id !== productId),
-      )
-
-      return
-    }
-
-    /*
-     * AUTHENTICATED
-     */
-    try {
-      const serverCart = await removeCartItem(storedToken, productId)
-
-      setCart(serverCart.items || [])
-    } catch (error) {
-      console.error('Failed to remove item from cart:', error)
-    }
-  }
-  /*function handleRemoveFromCart(productId) {
-    setCart((currentCart) =>
-      currentCart.filter((item) => item.product._id !== productId),
-    )
-  }*/
-
-  async function handleUpdateCartQuantity(productId, newQuantity) {
-    if (newQuantity < 1) {
-      return
-    }
-
-    const storedToken = getStoredToken()
-
-    /*
-     * ANONYMOUS
-     */
-    if (!storedToken) {
-      setCart((currentCart) =>
-        currentCart.map((item) =>
-          item.product._id === productId
-            ? {
-                ...item,
-                quantity: newQuantity,
-              }
-            : item,
-        ),
-      )
-
-      return
-    }
-
-    /*
-     * AUTHENTICATED
-     */
-    try {
-      const serverCart = await updateCartItem(
-        storedToken,
-        productId,
-        newQuantity,
-      )
-
-      setCart(serverCart.items || [])
-    } catch (error) {
-      console.error('Failed to update cart:', error)
-    }
-  }
-
-  /*function handleUpdateCartQuantity(productId, newQuantity) {
-    if (newQuantity < 1) {
-      return
-    }
-
-    setCart((currentCart) =>
-      currentCart.map((item) =>
-        item.product._id === productId
-          ? {
-              ...item,
-              quantity: newQuantity,
-            }
-          : item,
-      ),
-    )
-  }*/
+  }, [reduxCart, token])
 
   return (
     <>
+      <Counter />
+
       <Routes>
         <Route path='/' element={<HomePage />} />
 
         <Route
           path='/products'
           element={
-            <ProductsPage
-              products={products}
-              setProducts={setProducts}
-              onAddToCart={handleAddToCart}
-            />
+            <ProductsPage products={products} setProducts={setProducts} />
           }
         />
 
-        <Route
-          path='/cart'
-          element={
-            <CartPage
-              cart={cart}
-              onRemoveFromCart={handleRemoveFromCart}
-              onUpdateCartQuantity={handleUpdateCartQuantity}
-            />
-          }
-        />
+        <Route path='/cart' element={<CartPage />} />
 
         <Route path='/register' element={<RegisterPage />} />
 
-        <Route
-          path='/login'
-          element={
-            <LoginPage cart={cart} setCart={setCart} setToken={setToken} />
-          }
-        />
+        <Route path='/login' element={<LoginPage setToken={setToken} />} />
 
-        <Route
-          path='/logout'
-          element={<LogoutPage setToken={setToken} setCart={setCart} />}
-        />
+        <Route path='/logout' element={<LogoutPage setToken={setToken} />} />
       </Routes>
     </>
   )

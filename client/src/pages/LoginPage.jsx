@@ -1,10 +1,19 @@
 import { useState } from 'react'
+
+import { useSelector, useDispatch } from 'react-redux'
+import { setCart } from '../features/cart/cartSlice'
+
 import { loginUser, getProfile } from '../api/authApi'
+
 import { getCart, addToCart } from '../api/cartApi'
 
-function LoginPage({ cart, setCart, setToken }) {
+function LoginPage({ setToken }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+
+  const cart = useSelector((state) => state.cart.items)
+
+  const dispatch = useDispatch()
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -40,7 +49,8 @@ function LoginPage({ cart, setCart, setToken }) {
       /*
        * 5. Server becomes the source of truth
        */
-      setCart(serverCart.items || [])
+      dispatch(setCart(serverCart.items || []))
+      //setCart(serverCart.items || [])
 
       /*
        * 6. Remove the anonymous copy
