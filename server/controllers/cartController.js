@@ -1,6 +1,7 @@
 const {
   getCart,
   addItemToCart,
+  mergeCart,
   updateCartItem,
   removeCartItem,
   clearCart,
@@ -20,6 +21,19 @@ const addToCart = asyncHandler(async (req, res) => {
   const cart = await addItemToCart(req.user.userId, productId, quantity)
 
   res.status(201).json(cart)
+})
+
+/*
+ * NEW:
+ * Receive the anonymous cart from the client
+ * and give it to the service.
+ */
+const mergeMyCart = asyncHandler(async (req, res) => {
+  const { items } = req.body
+
+  const cart = await mergeCart(req.user.userId, items)
+
+  res.json(cart)
 })
 
 const updateItem = asyncHandler(async (req, res) => {
@@ -48,6 +62,7 @@ const clearMyCart = asyncHandler(async (req, res) => {
 module.exports = {
   getMyCart,
   addToCart,
+  mergeMyCart,
   updateItem,
   removeItem,
   clearMyCart,

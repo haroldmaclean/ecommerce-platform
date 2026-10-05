@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { setCart } from './features/cart/cartSlice'
+import { setToken } from './features/auth/authSlice'
 
 import { Routes, Route } from 'react-router-dom'
 
@@ -19,30 +20,41 @@ import Counter from './features/counter/Counter'
 import { getCart } from './api/cartApi'
 import { getStoredToken } from './api/authApi'
 
+import { loadCart, saveCart } from './storage/cartStorage'
+
 import './App.css'
 
 function App() {
-  const [products, setProducts] = useState([])
-  const [token, setToken] = useState(() => {
+  const token = useSelector((state) => state.auth.token)
+
+  /*const [token, setToken] = useState(() => {
     return getStoredToken()
-  })
+  })*/
+
+  const [cartHydrated, setCartHydrated] = useState(false)
 
   const dispatch = useDispatch()
 
   const reduxCart = useSelector((state) => state.cart.items)
 
   useEffect(() => {
-    async function loadCart() {
+    const storedToken = getStoredToken()
+
+    if (storedToken) {
+      dispatch(setToken(storedToken))
+    }
+  }, [dispatch])
+
+  useEffect(() => {
+    async function hydrateCart() {
       const storedToken = getStoredToken()
 
       if (!storedToken) {
-        const savedCart = localStorage.getItem('cart')
+        const savedCart = loadCart()
 
-        if (savedCart) {
-          setCart(JSON.parse(savedCart))
-        } else {
-          setCart([])
-        }
+        dispatch(setCart(savedCart))
+
+        setCartHydrated(true)
 
         return
       }
@@ -51,19 +63,21 @@ function App() {
         const serverCart = await getCart(storedToken)
 
         dispatch(setCart(serverCart.items || []))
+
+        setCartHydrated(true)
       } catch (error) {
         console.error('Failed to load authenticated cart:', error)
       }
     }
 
-    loadCart()
+    hydrateCart()
   }, [token, dispatch])
 
   useEffect(() => {
-    if (!token) {
-      localStorage.setItem('cart', JSON.stringify(reduxCart))
+    if (!token && cartHydrated) {
+      saveCart(reduxCart)
     }
-  }, [reduxCart, token])
+  }, [reduxCart, token, cartHydrated])
 
   return (
     <>
@@ -72,12 +86,7 @@ function App() {
       <Routes>
         <Route path='/' element={<HomePage />} />
 
-        <Route
-          path='/products'
-          element={
-            <ProductsPage products={products} setProducts={setProducts} />
-          }
-        />
+        <Route path='/products' element={<ProductsPage />} />
 
         <Route path='/cart' element={<CartPage />} />
 
@@ -85,7 +94,7 @@ function App() {
 
         <Route path='/login' element={<LoginPage setToken={setToken} />} />
 
-        <Route path='/logout' element={<LogoutPage setToken={setToken} />} />
+        <Route path='/logout' element={<LogoutPage />} />
       </Routes>
     </>
   )

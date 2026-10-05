@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useDispatch } from 'react-redux'
 import { addItem, setCart } from '../features/cart/cartSlice'
@@ -9,7 +9,9 @@ import { getStoredToken } from '../api/authApi'
 
 import ProductCard from '../components/ProductCard'
 
-function ProductsPage({ products, setProducts }) {
+function ProductsPage() {
+  const [products, setProducts] = useState([])
+
   const dispatch = useDispatch()
 
   async function handleAddToCart(product) {

@@ -2,12 +2,13 @@ import { useState } from 'react'
 
 import { useSelector, useDispatch } from 'react-redux'
 import { setCart } from '../features/cart/cartSlice'
+import { setToken } from '../features/auth/authSlice'
 
 import { loginUser, getProfile } from '../api/authApi'
 
-import { getCart, addToCart } from '../api/cartApi'
+import { getCart, mergeCart } from '../api/cartApi'
 
-function LoginPage({ setToken }) {
+function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -35,9 +36,12 @@ function LoginPage({ setToken }) {
        * 3. Merge anonymous cart into
        *    the authenticated user's server cart
        */
-      for (const item of anonymousCart) {
-        await addToCart(result.token, item.product._id, item.quantity)
-      }
+      const mergeItems = anonymousCart.map((item) => ({
+        productId: item.product._id,
+        quantity: item.quantity,
+      }))
+
+      await mergeCart(result.token, mergeItems)
 
       /*
        * 4. Get the final server cart
@@ -64,7 +68,7 @@ function LoginPage({ setToken }) {
        */
       localStorage.setItem('token', result.token)
 
-      setToken(result.token)
+      dispatch(setToken(result.token))
 
       /*
        * 8. Verify protected identity

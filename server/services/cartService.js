@@ -1,4 +1,5 @@
 const Cart = require('../models/Cart')
+const Product = require('../models/Product')
 
 const getCart = async (userId) => {
   return await Cart.findOne({ user: userId }).populate('items.product')
@@ -32,6 +33,54 @@ const addItemToCart = async (userId, productId, quantity) => {
       product: productId,
       quantity,
     })
+  }
+
+  await cart.save()
+
+  return await Cart.findById(cart._id).populate('items.product')
+}
+
+/*
+ * NEW:
+ * Merge an anonymous cart into the authenticated user's cart.
+ */
+const mergeCart = async (userId, anonymousItems) => {
+  let cart = await Cart.findOne({ user: userId })
+
+  if (!cart) {
+    cart = await Cart.create({
+      user: userId,
+
+      items: [],
+    })
+  }
+
+  for (const anonymousItem of anonymousItems) {
+    const { productId, quantity } = anonymousItem
+
+    const product = await Product.findById(productId)
+
+    if (!product) {
+      continue
+    }
+
+    const existingItem = cart.items.find(
+      (item) => item.product.toString() === productId,
+    )
+
+    if (existingItem) {
+      existingItem.quantity = Math.min(
+        existingItem.quantity + quantity,
+
+        product.stock,
+      )
+    } else {
+      cart.items.push({
+        product: productId,
+
+        quantity: Math.min(quantity, product.stock),
+      })
+    }
   }
 
   await cart.save()
@@ -101,6 +150,7 @@ module.exports = {
   getCart,
   //createCart,
   addItemToCart,
+  mergeCart,
   updateCartItem,
   removeCartItem,
   clearCart,

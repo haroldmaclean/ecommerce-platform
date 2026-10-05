@@ -6,6 +6,7 @@ const router = express.Router()
 const {
   getMyCart,
   addToCart,
+  mergeMyCart,
   updateItem,
   removeItem,
   clearMyCart,
@@ -19,6 +20,7 @@ const validate = require('../middlewares/validationMiddleware')
 const {
   addToCartSchema,
   updateCartItemSchema,
+  mergeCartSchema,
 } = require('../validators/cartValidator')
 
 // --- Routes ---
@@ -28,6 +30,9 @@ router.get('/', authenticate, getMyCart)
 
 // Add Item to Cart (Body requires: { productId, quantity })
 router.post('/items', authenticate, validate(addToCartSchema), addToCart)
+
+// Merge Anonymous Cart into User Cart
+router.post('/merge', authenticate, validate(mergeCartSchema), mergeMyCart)
 
 // Update Item Quantity (Body requires: { quantity })
 router.patch(

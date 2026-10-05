@@ -4,21 +4,24 @@ import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 import { clearCart } from '../features/cart/cartSlice'
+import { clearToken } from '../features/auth/authSlice'
 
-function LogoutPage({ setToken }) {
+function LogoutPage() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
   useEffect(() => {
     localStorage.removeItem('token')
-    //localStorage.removeItem('cart')
+    localStorage.removeItem('cart')
 
     dispatch(clearCart())
 
-    setToken(null)
+    dispatch(clearToken())
+
+    //setToken(null)
 
     navigate('/login')
-  }, [navigate, setToken, dispatch])
+  }, [navigate, dispatch])
 
   return <p>Logging out...</p>
 }

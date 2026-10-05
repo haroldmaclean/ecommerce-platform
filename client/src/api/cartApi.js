@@ -42,6 +42,29 @@ export async function addToCart(token, productId, quantity) {
   return data
 }
 
+export async function mergeCart(token, items) {
+  const response = await fetch(`${API_URL}/merge`, {
+    method: 'POST',
+
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+
+    body: JSON.stringify({
+      items,
+    }),
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to merge cart')
+  }
+
+  return data
+}
+
 export async function updateCartItem(token, productId, quantity) {
   const response = await fetch(`${API_URL}/items/${productId}`, {
     method: 'PATCH',
