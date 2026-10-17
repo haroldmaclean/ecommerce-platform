@@ -4,9 +4,9 @@ import { useSelector, useDispatch } from 'react-redux'
 import { setCart } from '../features/cart/cartSlice'
 import { setToken } from '../features/auth/authSlice'
 
-import { loginUser, getProfile } from '../api/authApi'
+import { getProfile } from '../api/authApi'
 
-import { getCart, mergeCart } from '../api/cartApi'
+import { loginWorkflow } from '../workflows/authWorkflow'
 
 function LoginPage() {
   const [email, setEmail] = useState('')
@@ -20,59 +20,20 @@ function LoginPage() {
     event.preventDefault()
 
     try {
-      /*
-       * 1. Login
-       */
-      const result = await loginUser(email, password)
+      const anonymousCart = [...cart]
+
+      const result = await loginWorkflow(email, password, anonymousCart)
 
       console.log('Login successful:', result)
 
-      /*
-       * 2. Preserve the anonymous cart
-       */
-      const anonymousCart = [...cart]
+      dispatch(setCart(result.cart))
 
-      /*
-       * 3. Merge anonymous cart into
-       *    the authenticated user's server cart
-       */
-      const mergeItems = anonymousCart.map((item) => ({
-        productId: item.product._id,
-        quantity: item.quantity,
-      }))
-
-      await mergeCart(result.token, mergeItems)
-
-      /*
-       * 4. Get the final server cart
-       */
-      const serverCart = await getCart(result.token)
-
-      console.log('Authenticated cart:', serverCart)
-
-      /*
-       * 5. Server becomes the source of truth
-       */
-      dispatch(setCart(serverCart.items || []))
-      //setCart(serverCart.items || [])
-
-      /*
-       * 6. Remove the anonymous copy
-       */
       localStorage.removeItem('cart')
 
-      /*
-       * 7. NOW mark React as authenticated
-       *
-       * This happens last deliberately.
-       */
       localStorage.setItem('token', result.token)
 
       dispatch(setToken(result.token))
 
-      /*
-       * 8. Verify protected identity
-       */
       const profile = await getProfile(result.token)
 
       console.log('Protected profile:', profile)

@@ -12,7 +12,9 @@ export async function getCart(token) {
   const data = await response.json()
 
   if (!response.ok) {
-    throw new Error(data.message || 'Failed to get cart')
+    const error = new Error(data.message || 'Failed to get cart')
+    error.status = response.status
+    throw error
   }
 
   return data

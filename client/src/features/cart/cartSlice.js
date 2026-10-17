@@ -2,18 +2,26 @@ import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
   items: [],
+  status: 'idle',
+  error: null,
 }
-
-/*const initialState = {
-  items: savedCart ? JSON.parse(savedCart) : [],
-}*/
 
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
+    cartLoadFailed(state, action) {
+      state.status = 'failed'
+      state.error = action.payload
+    },
+    cartLoadStarted(state) {
+      state.status = 'loading'
+      state.error = null
+    },
     setCart(state, action) {
       state.items = action.payload
+      state.status = 'succeeded'
+      state.error = null
     },
 
     addItem(state, action) {
@@ -56,7 +64,14 @@ const cartSlice = createSlice({
   },
 })
 
-export const { setCart, addItem, updateQuantity, removeItem, clearCart } =
-  cartSlice.actions
+export const {
+  cartLoadStarted,
+  cartLoadFailed,
+  setCart,
+  addItem,
+  updateQuantity,
+  removeItem,
+  clearCart,
+} = cartSlice.actions
 
 export default cartSlice.reducer

@@ -5,10 +5,13 @@ import { updateQuantity, removeItem, setCart } from '../features/cart/cartSlice'
 import { removeCartItem, updateCartItem } from '../api/cartApi'
 import { getStoredToken } from '../api/authApi'
 
-function CartPage() {
+function CartPage({ onRetry }) {
   console.log('🔥 CartPage rendered')
 
   const cart = useSelector((state) => state.cart.items)
+
+  const cartStatus = useSelector((state) => state.cart.status)
+  const cartError = useSelector((state) => state.cart.error)
 
   console.log('CartPage Redux cart:', cart)
 
@@ -70,42 +73,70 @@ function CartPage() {
     <main>
       <h1>Your Cart</h1>
 
-      <p>Cart items: {cart.length}</p>
-      <p>Cart total: ${cartTotal}</p>
+      {cartStatus === 'loading' && <p>Loading your cart...</p>}
 
-      <div>
-        {cart.map((item) => (
-          <div key={item.product._id}>
-            <h2>{item.product.name}</h2>
+      {cartStatus === 'failed' && (
+        <div>
+          <p role='alert'>Unable to load your cart: {cartError}</p>
 
-            <p>Price: ${item.product.price}</p>
+          <button onClick={onRetry}>Retry</button>
+        </div>
+      )}
 
+      {cartStatus === 'succeeded' && (
+        <>
+          <p>Cart items: {cart.length}</p>
+          <p>Cart total: ${cartTotal}</p>
+
+          {cart.length === 0 ? (
+            <p>Your cart is empty.</p>
+          ) : (
             <div>
-              <button
-                onClick={() =>
-                  handleQuantityChange(item.product._id, item.quantity - 1)
-                }
-              >
-                −
-              </button>
+              {cart.map((item) => (
+                <div key={item.product._id}>
+                  <h2>{item.product.name}</h2>
 
-              <span> {item.quantity} </span>
+                  <p>Price: ${item.product.price}</p>
 
-              <button
-                onClick={() =>
-                  handleQuantityChange(item.product._id, item.quantity + 1)
-                }
-              >
-                +
-              </button>
+                  <div>
+                    <button
+                      onClick={() =>
+                        handleQuantityChange(
+                          item.product._id,
+                          item.quantity - 1,
+                        )
+                      }
+                      disabled={item.quantity <= 1}
+                    >
+                      −
+                    </button>
+
+                    <span> {item.quantity} </span>
+
+                    <button
+                      onClick={() =>
+                        handleQuantityChange(
+                          item.product._id,
+                          item.quantity + 1,
+                        )
+                      }
+                      disabled={item.quantity >= item.product.stock}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => handleRemoveFromCart(item.product._id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
             </div>
-
-            <button onClick={() => handleRemoveFromCart(item.product._id)}>
-              Remove
-            </button>
-          </div>
-        ))}
-      </div>
+          )}
+        </>
+      )}
     </main>
   )
 }
