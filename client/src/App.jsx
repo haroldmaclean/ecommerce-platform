@@ -55,6 +55,8 @@ function App() {
   }, [dispatch])
 
   useEffect(() => {
+    let ignore = false
+
     async function hydrateCart() {
       const storedToken = getStoredToken()
 
@@ -75,10 +77,14 @@ function App() {
       try {
         const serverCart = await getCart(storedToken)
 
+        if (ignore) return
+
         dispatch(setCart(serverCart.items || []))
 
         setCartHydrated(true)
       } catch (error) {
+        if (ignore) return
+
         console.error('Failed to load authenticated cart:', error)
 
         if (error.status === 401) {
@@ -100,6 +106,9 @@ function App() {
     }
 
     hydrateCart()
+    return () => {
+      ignore = true
+    }
   }, [token, dispatch, cartRetryCount])
 
   useEffect(() => {
