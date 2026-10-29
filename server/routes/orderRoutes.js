@@ -25,8 +25,6 @@ router.get('/admin', authMiddleware, authorize('admin'), getAllOrders)
 
 router.get('/:orderId', authMiddleware, getSingleOrder)
 
-//router.patch('/:orderId/status', authMiddleware, updateOrderStatus)
-
 router.patch(
   '/:orderId/status',
   authMiddleware,

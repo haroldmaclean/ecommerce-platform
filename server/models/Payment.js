@@ -32,6 +32,12 @@ const paymentSchema = new mongoose.Schema(
       default: 'pending',
     },
 
+    refundStatus: {
+      type: String,
+      enum: ['not_required', 'pending', 'succeeded', 'failed'],
+      default: 'not_required',
+    },
+
     stripePaymentIntentId: {
       type: String,
       unique: true,

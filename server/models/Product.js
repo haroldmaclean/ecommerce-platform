@@ -12,9 +12,7 @@ const productSchema = new mongoose.Schema({
   description: {
     type: String,
   },
-  // category: {
-  //   type: String,
-  // },
+
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
@@ -22,6 +20,11 @@ const productSchema = new mongoose.Schema({
   stock: {
     type: Number,
     default: 0,
+  },
+  reservedStock: {
+    type: Number,
+    default: 0,
+    min: 0,
   },
 })
 

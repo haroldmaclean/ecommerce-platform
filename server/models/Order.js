@@ -62,8 +62,20 @@ const orderSchema = new mongoose.Schema(
         'shipped',
         'delivered',
         'cancelled',
+        'expired',
       ],
       default: 'pending',
+    },
+    // Inventory reservation lifecycle
+    reservationStatus: {
+      type: String,
+      enum: ['active', 'finalized', 'released'],
+      default: 'active',
+    },
+    // Exact deadline for the 15-minute reservation window
+    reservationExpiresAt: {
+      type: Date,
+      required: true,
     },
   },
   {

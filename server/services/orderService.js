@@ -12,22 +12,20 @@ const createOrder = async (userId) => {
   try {
     session.startTransaction()
 
-    // 1. Find the user's cart (session attached)
+    // 1. Load the user's cart inside the transaction.
     const cart = await Cart.findOne({ user: userId })
       .populate('items.product')
       .session(session)
 
-    // 2. Make sure the cart exists
     if (!cart) {
       throw new AppError('Cart not found', 404)
     }
 
-    // 3. Make sure the cart isn't empty
     if (cart.items.length === 0) {
       throw new AppError('Cannot create order from an empty cart', 400)
     }
 
-    // 4. Check stock and create order items
+    // 2. Prepare an order snapshot from the cart.
     const orderItems = []
 
     for (const item of cart.items) {
@@ -37,10 +35,6 @@ const createOrder = async (userId) => {
         throw new AppError('Product not found', 404)
       }
 
-      /*if (product.stock < item.quantity) {
-        throw new AppError(`Not enough stock for ${product.name}`, 400)
-      }*/
-
       orderItems.push({
         product: product._id,
         name: product.name,
@@ -49,34 +43,46 @@ const createOrder = async (userId) => {
       })
     }
 
-    // 5. Calculate total
+    // 3. Calculate the order total.
     const totalAmount = orderItems.reduce((total, item) => {
       return total + item.price * item.quantity
     }, 0)
 
-    // 6. Create the order (array syntax + session attached)
+    // 4. Set the reservation deadline to 15 minutes from now.
+    const reservationExpiresAt = new Date(Date.now() + 15 * 60 * 1000)
+
+    // 5. Create the pending order within the transaction.
     const [order] = await Order.create(
       [
         {
           user: userId,
           items: orderItems,
           totalAmount,
+          status: 'pending',
+          reservationStatus: 'active',
+          reservationExpiresAt,
         },
       ],
       { session },
     )
 
-    // 7. Reduce product stock (session attached)
-    // 7. Atomic Conditional Stock Update (Check + Decrement in one operation)
-    for (const item of cart.items) {
+    // 6. Atomically reserve available stock for every item.
+    for (const item of orderItems) {
       const updatedProduct = await Product.findOneAndUpdate(
         {
-          _id: item.product._id,
-          stock: { $gte: item.quantity }, // Matches ONLY if current stock >= requested quantity
+          _id: item.product,
+          $expr: {
+            $gte: [
+              {
+                $subtract: ['$stock', { $ifNull: ['$reservedStock', 0] }],
+              },
+              item.quantity,
+            ],
+          },
         },
         {
           $inc: {
-            stock: -item.quantity,
+            reservedStock: item.quantity,
           },
         },
         {
@@ -85,43 +91,170 @@ const createOrder = async (userId) => {
         },
       )
 
-      // If no product matched, stock was insufficient -> trigger immediate rollback
       if (!updatedProduct) {
-        throw new AppError(
-          `Not enough stock available for ${item.product.name}`,
-          400,
-        )
+        throw new AppError(`Not enough available stock for ${item.name}`, 400)
       }
     }
-    /*for (const item of cart.items) {
-      await Product.findByIdAndUpdate(
-        item.product._id,
-        {
-          $inc: {
-            stock: -item.quantity,
-          },
-        },
-        { session },
-      )
-    }*/
 
-    // 8. Clear the cart (session attached)
-    cart.items = []
-    await cart.save({ session })
-
-    // Commit all changes atomically
+    // 7. Commit the order and reservations together.
+    // Do not decrement stock or clear the cart yet.
     await session.commitTransaction()
 
     return order
   } catch (error) {
-    // Roll back all database changes on failure
-    await session.abortTransaction()
+    if (session.inTransaction()) {
+      await session.abortTransaction()
+    }
+
     throw error
   } finally {
-    // Always release the session context
     await session.endSession()
   }
 }
+
+const releaseExpiredReservation = async (orderId) => {
+  const session = await mongoose.startSession()
+
+  try {
+    session.startTransaction()
+
+    // 1. Atomically claim an expired, active reservation.
+    // Only one transaction should be able to change this state.
+    const order = await Order.findOneAndUpdate(
+      {
+        _id: orderId,
+        reservationStatus: 'active',
+        status: 'pending',
+        reservationExpiresAt: { $lte: new Date() },
+      },
+      {
+        $set: {
+          reservationStatus: 'released',
+          status: 'expired',
+        },
+      },
+      {
+        new: true,
+        session,
+      },
+    )
+
+    if (!order) {
+      throw new AppError(
+        'No active expired reservation found for this order',
+        409,
+      )
+    }
+
+    // 2. Release the reserved quantity for every item.
+    for (const item of order.items) {
+      const updatedProduct = await Product.findOneAndUpdate(
+        {
+          _id: item.product,
+          reservedStock: { $gte: item.quantity },
+        },
+        {
+          $inc: {
+            reservedStock: -item.quantity,
+          },
+        },
+        {
+          new: true,
+          session,
+        },
+      )
+
+      if (!updatedProduct) {
+        throw new AppError(
+          `Could not release reserved stock for ${item.name}`,
+          409,
+        )
+      }
+    }
+
+    // 3. Commit the state change and inventory changes together.
+    await session.commitTransaction()
+
+    return order
+  } catch (error) {
+    if (session.inTransaction()) {
+      await session.abortTransaction()
+    }
+
+    throw error
+  } finally {
+    await session.endSession()
+  }
+}
+
+/*const releaseExpiredReservation = async (orderId) => {
+  const session = await mongoose.startSession()
+
+  try {
+    session.startTransaction()
+
+    // 1. Find an order whose reservation has expired.
+    const order = await Order.findOne({
+      _id: orderId,
+      reservationStatus: 'active',
+      reservationExpiresAt: { $lte: new Date() },
+    }).session(session)
+
+    // 2. If no matching order exists, nothing can be released.
+    if (!order) {
+      throw new AppError(
+        'No active expired reservation found for this order',
+        409,
+      )
+    }
+
+    // 3. Release each product quantity held by this order.
+    for (const item of order.items) {
+      const updatedProduct = await Product.findOneAndUpdate(
+        {
+          _id: item.product,
+          reservedStock: { $gte: item.quantity },
+        },
+        {
+          $inc: {
+            reservedStock: -item.quantity,
+          },
+        },
+        {
+          new: true,
+          session,
+        },
+      )
+
+      // Abort everything if the inventory data is inconsistent.
+      if (!updatedProduct) {
+        throw new AppError(
+          `Could not release reserved stock for ${item.name}`,
+          409,
+        )
+      }
+    }
+
+    // 4. Record that this reservation has been released.
+    order.reservationStatus = 'released'
+    order.status = 'expired'
+
+    await order.save({ session })
+
+    // 5. Commit inventory changes and order changes together.
+    await session.commitTransaction()
+
+    return order
+  } catch (error) {
+    if (session.inTransaction()) {
+      await session.abortTransaction()
+    }
+
+    throw error
+  } finally {
+    await session.endSession()
+  }
+}*/
 
 const getMyOrders = async (userId) => {
   return await Order.find({ user: userId }).sort({ createdAt: -1 })
@@ -164,6 +297,7 @@ const getAllOrders = async () => {
 
 module.exports = {
   createOrder,
+  releaseExpiredReservation,
   getMyOrders,
   getOrderById,
   updateOrderStatus,
