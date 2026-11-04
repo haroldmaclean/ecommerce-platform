@@ -6,7 +6,11 @@ import {
   cartLoadFailed,
   setCart,
 } from './features/cart/cartSlice'
-import { clearToken, setToken } from './features/auth/authSlice'
+import {
+  clearToken,
+  setToken,
+  setAuthInitialized,
+} from './features/auth/authSlice'
 
 import { Routes, Route } from 'react-router-dom'
 
@@ -25,6 +29,9 @@ import { getCart } from './api/cartApi'
 import { getStoredToken } from './api/authApi'
 
 import { loadCart, saveCart } from './storage/cartStorage'
+
+import ProtectedRoute from './components/ProtectedRoute'
+import CheckoutPage from './pages/CheckoutPage'
 
 import './App.css'
 
@@ -52,6 +59,7 @@ function App() {
     if (storedToken) {
       dispatch(setToken(storedToken))
     }
+    dispatch(setAuthInitialized())
   }, [dispatch])
 
   useEffect(() => {
@@ -136,6 +144,10 @@ function App() {
         <Route path='/login' element={<LoginPage setToken={setToken} />} />
 
         <Route path='/logout' element={<LogoutPage />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path='/checkout' element={<CheckoutPage />} />
+        </Route>
       </Routes>
     </>
   )

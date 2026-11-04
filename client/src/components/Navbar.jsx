@@ -1,12 +1,23 @@
 import { NavLink } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 function Navbar() {
+  const token = useSelector((state) => state.auth.token)
+
   return (
     <nav>
       <h2>Our Store</h2>
 
       <ul>
-        <li>Home</li>
+        <li>
+          <NavLink
+            to='/'
+            className={({ isActive }) => (isActive ? 'active' : '')}
+          >
+            Home
+          </NavLink>
+        </li>
+
         <li>
           <NavLink
             to='/products'
@@ -17,7 +28,6 @@ function Navbar() {
         </li>
 
         <li>
-          {' '}
           <NavLink
             to='/cart'
             className={({ isActive }) => (isActive ? 'active' : '')}
@@ -25,6 +35,37 @@ function Navbar() {
             Cart
           </NavLink>
         </li>
+
+        {token && (
+          <li>
+            <NavLink
+              to='/checkout'
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              Checkout
+            </NavLink>
+          </li>
+        )}
+
+        {!token ? (
+          <li>
+            <NavLink
+              to='/login'
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              Login
+            </NavLink>
+          </li>
+        ) : (
+          <li>
+            <NavLink
+              to='/logout'
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              Logout
+            </NavLink>
+          </li>
+        )}
       </ul>
     </nav>
   )

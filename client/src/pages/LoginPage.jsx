@@ -1,6 +1,9 @@
 import { useState } from 'react'
 
 import { useSelector, useDispatch } from 'react-redux'
+
+import { useLocation, useNavigate } from 'react-router-dom'
+
 import { setCart } from '../features/cart/cartSlice'
 import { setToken } from '../features/auth/authSlice'
 
@@ -13,6 +16,19 @@ function LoginPage() {
   const [password, setPassword] = useState('')
 
   const cart = useSelector((state) => state.cart.items)
+
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const requestedPath = location.state?.from
+
+  const from =
+    typeof requestedPath === 'string' &&
+    requestedPath.startsWith('/') &&
+    !requestedPath.startsWith('//') &&
+    !requestedPath.includes('\\')
+      ? requestedPath
+      : '/products'
 
   const dispatch = useDispatch()
 
@@ -37,6 +53,8 @@ function LoginPage() {
       const profile = await getProfile(result.token)
 
       console.log('Protected profile:', profile)
+
+      navigate(from, { replace: true })
     } catch (error) {
       console.error('Login failed:', error)
     }
