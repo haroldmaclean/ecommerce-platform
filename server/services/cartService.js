@@ -2,7 +2,13 @@ const Cart = require('../models/Cart')
 const Product = require('../models/Product')
 
 const getCart = async (userId) => {
-  return await Cart.findOne({ user: userId }).populate('items.product')
+  let cart = await Cart.findOne({ user: userId })
+
+  if (!cart) {
+    cart = await createCart(userId)
+  }
+
+  return await Cart.findById(cart._id).populate('items.product')
 }
 
 const createCart = async (userId) => {

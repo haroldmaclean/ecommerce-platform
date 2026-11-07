@@ -4,6 +4,11 @@ import { useSelector } from 'react-redux'
 import { createOrder } from '../api/orderApi'
 import { createPayment } from '../api/paymentApi'
 
+import { Elements } from '@stripe/react-stripe-js'
+
+import { stripePromise } from '../config/stripe'
+import PaymentForm from '../components/PaymentForm'
+
 function CheckoutPage() {
   const token = useSelector((state) => state.auth.token)
 
@@ -79,6 +84,16 @@ function CheckoutPage() {
               ? 'Retry payment creation'
               : 'Create order and payment'}
         </button>
+      )}
+
+      {clientSecret && (
+        <Elements
+          stripe={stripePromise}
+          options={{ clientSecret }}
+          key={payment?._id}
+        >
+          <PaymentForm />
+        </Elements>
       )}
     </main>
   )
