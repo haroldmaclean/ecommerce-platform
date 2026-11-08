@@ -12,7 +12,7 @@ const Product = require('../models/Product')
 const { createPayment } = require('../services/paymentService')
 const { releaseExpiredReservation } = require('../services/orderService')
 
-const TEST_USER_ID = '6a81c287f256743e8729996f'
+const TEST_USER_ID = '6aef7ae4655fb46ed592a31c'
 const TEST_PRODUCT_ID = '6a7ccf7df94d8b6c90957423'
 
 const TEST_QUANTITY = 1

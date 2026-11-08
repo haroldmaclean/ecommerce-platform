@@ -19,6 +19,9 @@ import ProductsPage from './pages/ProductsPage'
 
 import CartPage from './pages/CartPage'
 
+import OrdersPage from './pages/OrdersPage'
+import OrderDetailsPage from './pages/OrderDetailsPage'
+
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import LogoutPage from './pages/LogoutPage'
@@ -147,6 +150,8 @@ function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path='/checkout' element={<CheckoutPage />} />
+          <Route path='/orders' element={<OrdersPage />} />
+          <Route path='/orders/:orderId' element={<OrderDetailsPage />} />
         </Route>
       </Routes>
     </>

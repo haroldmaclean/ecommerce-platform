@@ -47,6 +47,17 @@ function Navbar() {
           </li>
         )}
 
+        {token && (
+          <li>
+            <NavLink
+              to='/orders'
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              My Orders
+            </NavLink>
+          </li>
+        )}
+
         {!token ? (
           <li>
             <NavLink
