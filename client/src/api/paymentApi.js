@@ -20,3 +20,22 @@ export async function createPayment(token, orderId) {
 
   return data
 }
+
+export async function getPaymentByOrderId(token, orderId) {
+  const response = await fetch(`${API_URL}/order/${orderId}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to retrieve payment')
+    error.status = response.status
+    throw error
+  }
+
+  return data
+}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 
-function PaymentForm() {
+function PaymentForm({ onPaymentSucceeded }) {
   const stripe = useStripe()
   const elements = useElements()
 
@@ -34,6 +34,8 @@ function PaymentForm() {
 
       if (result.paymentIntent?.status === 'succeeded') {
         setMessage('Payment submitted successfully. Confirming your order...')
+
+        onPaymentSucceeded()
       } else {
         setMessage(
           `Payment status: ${result.paymentIntent?.status || 'processing'}`,

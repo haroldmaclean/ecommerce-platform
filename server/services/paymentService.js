@@ -59,6 +59,34 @@ const createPayment = async (orderId, userId) => {
   }
 }
 
+const getPaymentByOrderId = async (orderId, userId) => {
+  if (!mongoose.isValidObjectId(orderId)) {
+    throw new AppError('Invalid order ID', 400)
+  }
+
+  // First verify that this order belongs to the authenticated user.
+  const order = await Order.findOne({
+    _id: orderId,
+    user: userId,
+  })
+
+  if (!order) {
+    throw new AppError('Order not found', 404)
+  }
+
+  // Then retrieve the payment belonging to that user and order.
+  const payment = await Payment.findOne({
+    order: order._id,
+    user: userId,
+  }).select('_id order amount currency status refundStatus createdAt updatedAt')
+
+  if (!payment) {
+    throw new AppError('Payment not found', 404)
+  }
+
+  return { payment }
+}
+
 // Refund outside the MongoDB transaction.
 // The same idempotency key is reused on every retry.
 const refundPayment = async (payment) => {
@@ -274,5 +302,6 @@ const handlePaymentSuccess = async (paymentIntent) => {
 
 module.exports = {
   createPayment,
+  getPaymentByOrderId,
   handlePaymentSuccess,
 }

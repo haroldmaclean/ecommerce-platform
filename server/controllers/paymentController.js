@@ -1,4 +1,8 @@
-const { createPayment } = require('../services/paymentService')
+const {
+  createPayment,
+  getPaymentByOrderId,
+} = require('../services/paymentService')
+
 const asyncHandler = require('../middlewares/asyncHandler')
 
 const createPaymentIntent = asyncHandler(async (req, res) => {
@@ -9,6 +13,13 @@ const createPaymentIntent = asyncHandler(async (req, res) => {
   res.status(201).json(result)
 })
 
+const getPaymentForOrder = asyncHandler(async (req, res) => {
+  const result = await getPaymentByOrderId(req.params.orderId, req.user.userId)
+
+  res.status(200).json(result)
+})
+
 module.exports = {
   createPaymentIntent,
+  getPaymentForOrder,
 }

@@ -1,17 +1,16 @@
 const express = require('express')
 
-const { createPaymentIntent } = require('../controllers/paymentController')
-
 const {
-  handleStripeWebhook,
-} = require('../controllers/paymentWebhookController')
+  createPaymentIntent,
+  getPaymentForOrder,
+} = require('../controllers/paymentController')
 
 const authMiddleware = require('../middlewares/authMiddleware')
 
 const router = express.Router()
 
-//router.post('/webhook', handleStripeWebhook)
-
 router.post('/', authMiddleware, createPaymentIntent)
+
+router.get('/order/:orderId', authMiddleware, getPaymentForOrder)
 
 module.exports = router
