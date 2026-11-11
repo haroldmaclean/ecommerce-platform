@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 
 function Navbar() {
   const token = useSelector((state) => state.auth.token)
+  const user = useSelector((state) => state.auth.user)
 
   return (
     <nav>
@@ -54,6 +55,17 @@ function Navbar() {
               className={({ isActive }) => (isActive ? 'active' : '')}
             >
               My Orders
+            </NavLink>
+          </li>
+        )}
+
+        {user?.role === 'admin' && (
+          <li>
+            <NavLink
+              to='/admin/orders'
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              Admin Orders
             </NavLink>
           </li>
         )}

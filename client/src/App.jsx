@@ -9,6 +9,7 @@ import {
 import {
   clearToken,
   setToken,
+  setUser,
   setAuthInitialized,
 } from './features/auth/authSlice'
 
@@ -22,6 +23,8 @@ import CartPage from './pages/CartPage'
 import OrdersPage from './pages/OrdersPage'
 import OrderDetailsPage from './pages/OrderDetailsPage'
 
+import AdminOrdersPage from './pages/AdminOrdersPage'
+
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import LogoutPage from './pages/LogoutPage'
@@ -29,11 +32,12 @@ import LogoutPage from './pages/LogoutPage'
 import Counter from './features/counter/Counter'
 
 import { getCart } from './api/cartApi'
-import { getStoredToken } from './api/authApi'
+import { getProfile, getStoredToken } from './api/authApi'
 
 import { loadCart, saveCart } from './storage/cartStorage'
 
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import CheckoutPage from './pages/CheckoutPage'
 
 import './App.css'
@@ -57,12 +61,30 @@ function App() {
   }
 
   useEffect(() => {
-    const storedToken = getStoredToken()
+    async function initializeAuth() {
+      const storedToken = getStoredToken()
 
-    if (storedToken) {
-      dispatch(setToken(storedToken))
+      if (storedToken) {
+        dispatch(setToken(storedToken))
+
+        try {
+          const profile = await getProfile(storedToken)
+
+          dispatch(setUser(profile.user))
+        } catch (error) {
+          console.error('Failed to restore user profile:', error)
+
+          if (error.status === 401) {
+            localStorage.removeItem('token')
+            dispatch(clearToken())
+          }
+        }
+      }
+
+      dispatch(setAuthInitialized())
     }
-    dispatch(setAuthInitialized())
+
+    initializeAuth()
   }, [dispatch])
 
   useEffect(() => {
@@ -152,6 +174,11 @@ function App() {
           <Route path='/checkout' element={<CheckoutPage />} />
           <Route path='/orders' element={<OrdersPage />} />
           <Route path='/orders/:orderId' element={<OrderDetailsPage />} />
+
+          {/* Authenticated admin routes */}
+          <Route element={<AdminRoute />}>
+            <Route path='/admin/orders' element={<AdminOrdersPage />} />
+          </Route>
         </Route>
       </Routes>
     </>

@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { setCart } from '../features/cart/cartSlice'
-import { setToken } from '../features/auth/authSlice'
+import { setToken, setUser } from '../features/auth/authSlice'
 
 import { getProfile } from '../api/authApi'
 
@@ -51,6 +51,7 @@ function LoginPage() {
       dispatch(setToken(result.token))
 
       const profile = await getProfile(result.token)
+      dispatch(setUser(profile.user))
 
       console.log('Protected profile:', profile)
 

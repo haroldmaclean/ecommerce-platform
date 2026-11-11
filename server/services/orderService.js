@@ -201,11 +201,13 @@ const getOrderById = async (orderId, userId) => {
     throw new AppError('Order not found', 404)
   }
 
-  // if (!order) {
-  //   throw new Error('Order not found')
-  // }
-
   return order
+}
+const allowedStatusTransitions = {
+  confirmed: ['processing'],
+  processing: ['shipped'],
+  shipped: ['delivered'],
+  delivered: [],
 }
 
 const updateOrderStatus = async (orderId, status) => {
@@ -215,15 +217,28 @@ const updateOrderStatus = async (orderId, status) => {
     throw new AppError('Order not found', 404)
   }
 
+  const allowedNextStatuses = allowedStatusTransitions[order.status]
+
+  if (!allowedNextStatuses?.includes(status)) {
+    throw new AppError(
+      `Cannot change order status from ${order.status} to ${status}`,
+      409,
+    )
+  }
+
   order.status = status
 
   await order.save()
+
+  await order.populate('user', 'name email')
 
   return order
 }
 
 const getAllOrders = async () => {
-  return await Order.find().sort({ createdAt: -1 })
+  return await Order.find()
+    .populate('user', 'name email')
+    .sort({ createdAt: -1 })
 }
 
 module.exports = {
