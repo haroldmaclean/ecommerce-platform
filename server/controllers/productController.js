@@ -1,5 +1,6 @@
 const {
   getAllProducts,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -10,6 +11,18 @@ const asyncHandler = require('../middlewares/asyncHandler')
 const getProducts = asyncHandler(async (req, res) => {
   const products = await getAllProducts()
   res.send(products)
+})
+
+const getProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params
+
+  const product = await getProductById(id)
+
+  if (!product) {
+    return res.status(404).json({ message: 'Product not found' })
+  }
+
+  res.json(product)
 })
 
 const addProduct = asyncHandler(async (req, res) => {
@@ -37,6 +50,7 @@ const deleteExistingProduct = asyncHandler(async (req, res) => {
 
 module.exports = {
   getProducts,
+  getProduct,
   addProduct,
   updateExistingProduct,
   deleteExistingProduct,

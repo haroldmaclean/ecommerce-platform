@@ -4,13 +4,14 @@ const router = express.Router()
 
 const {
   getProducts,
-
+  getProduct,
   addProduct,
   updateExistingProduct,
   deleteExistingProduct,
 } = require('../controllers/productController')
 
 router.get('/', getProducts)
+router.get('/:id', getProduct) // Retrieve one product
 
 const validate = require('../middlewares/validationMiddleware')
 

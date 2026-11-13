@@ -8,9 +8,11 @@ const getAllProducts = async () => {
   // return 'Products route is working!'
 }
 
-/*const getAllProducts = async () => {
-  throw new Error('Database connection failed')
-}*/
+const getProductById = async (id) => {
+  const product = await Product.findById(id).populate('category')
+
+  return product
+}
 
 const createProduct = async (productData) => {
   const product = await Product.create(productData)
@@ -33,6 +35,7 @@ const deleteProduct = async (id) => {
 
 module.exports = {
   getAllProducts,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
