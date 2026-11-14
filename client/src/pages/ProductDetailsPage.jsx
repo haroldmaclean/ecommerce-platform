@@ -3,12 +3,48 @@ import { Link, useParams } from 'react-router-dom'
 
 import { getProductById } from '../api/productApi'
 
+import { useDispatch } from 'react-redux'
+
+import { addItem, setCart } from '../features/cart/cartSlice'
+import { addToCart } from '../api/cartApi'
+import { getStoredToken } from '../api/authApi'
+
 function ProductDetailsPage() {
   const { productId } = useParams()
 
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  const dispatch = useDispatch()
+
+  const [cartMessage, setCartMessage] = useState('')
+  const [cartError, setCartError] = useState('')
+
+  async function handleAddToCart() {
+    const storedToken = getStoredToken()
+
+    setCartMessage('')
+    setCartError('')
+
+    // Guest customer
+    if (!storedToken) {
+      dispatch(addItem(product))
+      setCartMessage('Product added to cart.')
+      return
+    }
+
+    // Authenticated customer
+    try {
+      const serverCart = await addToCart(storedToken, product._id, 1)
+
+      dispatch(setCart(serverCart.items || []))
+
+      setCartMessage('Product added to cart.')
+    } catch (error) {
+      setCartError(error.message || 'Failed to add product to cart.')
+    }
+  }
 
   useEffect(() => {
     let ignore = false
@@ -69,6 +105,16 @@ function ProductDetailsPage() {
       <p>Category: {product.category?.name || 'Uncategorized'}</p>
 
       <p>Available stock: {product.stock - product.reservedStock}</p>
+
+      <button
+        onClick={handleAddToCart}
+        disabled={product.stock - (product.reservedStock || 0) <= 0}
+      >
+        Add to Cart
+      </button>
+      {cartMessage && <p role='status'>{cartMessage}</p>}
+
+      {cartError && <p role='alert'>{cartError}</p>}
 
       <Link to='/products'>Back to Products</Link>
     </section>
