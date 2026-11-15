@@ -35,11 +35,21 @@ router.post(
   uploadProductImage,
 )
 
-router.post('/', validate(createProductSchema), addProduct)
+router.post(
+  '/',
+  authenticate,
+  authorize('admin'),
+  validate(createProductSchema),
+  addProduct,
+)
 
-//router.put('/:id', updateExistingProduct)
-
-router.patch('/:id', validate(updateProductSchema), updateExistingProduct)
+router.patch(
+  '/:id',
+  authenticate,
+  authorize('admin'),
+  validate(updateProductSchema),
+  updateExistingProduct,
+)
 
 router.delete('/:id', authenticate, authorize('admin'), deleteExistingProduct)
 
