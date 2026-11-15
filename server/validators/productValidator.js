@@ -7,6 +7,8 @@ const productFields = {
 
   description: Joi.string(),
 
+  imageUrl: Joi.string().uri(),
+
   category: Joi.string().hex().length(24),
 
   stock: Joi.number().integer().min(0),

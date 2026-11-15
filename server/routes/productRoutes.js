@@ -6,9 +6,12 @@ const {
   getProducts,
   getProduct,
   addProduct,
+  uploadProductImage,
   updateExistingProduct,
   deleteExistingProduct,
 } = require('../controllers/productController')
+
+const upload = require('../middlewares/uploadMiddleware')
 
 router.get('/', getProducts)
 router.get('/:id', getProduct) // Retrieve one product
@@ -23,6 +26,14 @@ const {
   createProductSchema,
   updateProductSchema,
 } = require('../validators/productValidator')
+
+router.post(
+  '/upload-image',
+  authenticate,
+  authorize('admin'),
+  upload.single('image'),
+  uploadProductImage,
+)
 
 router.post('/', validate(createProductSchema), addProduct)
 

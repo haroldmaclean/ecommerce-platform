@@ -2,9 +2,12 @@ const {
   getAllProducts,
   getProductById,
   createProduct,
+
   updateProduct,
   deleteProduct,
 } = require('../services/productService')
+
+const { uploadImage } = require('../services/imageService')
 
 const asyncHandler = require('../middlewares/asyncHandler')
 
@@ -23,6 +26,18 @@ const getProduct = asyncHandler(async (req, res) => {
   }
 
   res.json(product)
+})
+
+const uploadProductImage = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'Please select an image' })
+  }
+
+  const result = await uploadImage(req.file.buffer)
+
+  res.json({
+    imageUrl: result.secure_url,
+  })
 })
 
 const addProduct = asyncHandler(async (req, res) => {
@@ -52,6 +67,7 @@ module.exports = {
   getProducts,
   getProduct,
   addProduct,
+  uploadProductImage,
   updateExistingProduct,
   deleteExistingProduct,
 }
