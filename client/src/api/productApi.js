@@ -19,3 +19,47 @@ export async function getProductById(id) {
 
   return response.json()
 }
+
+export async function uploadProductImage(token, file) {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  const response = await fetch(`${API_URL}/upload-image`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to upload product image')
+    error.status = response.status
+    throw error
+  }
+
+  return data
+}
+
+export async function createProduct(token, productData) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(productData),
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to create product')
+    error.status = response.status
+    throw error
+  }
+
+  return data
+}

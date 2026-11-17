@@ -25,6 +25,7 @@ import CartPage from './pages/CartPage'
 import OrdersPage from './pages/OrdersPage'
 import OrderDetailsPage from './pages/OrderDetailsPage'
 
+import AdminProductsPage from './pages/AdminProductsPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
 
 import RegisterPage from './pages/RegisterPage'
@@ -40,6 +41,7 @@ import { loadCart, saveCart } from './storage/cartStorage'
 
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
+
 import CheckoutPage from './pages/CheckoutPage'
 
 import './App.css'
@@ -182,6 +184,7 @@ function App() {
           {/* Authenticated admin routes */}
           <Route element={<AdminRoute />}>
             <Route path='/admin/orders' element={<AdminOrdersPage />} />
+            <Route path='/admin/products' element={<AdminProductsPage />} />
           </Route>
         </Route>
       </Routes>

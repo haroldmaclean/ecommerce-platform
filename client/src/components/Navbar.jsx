@@ -70,6 +70,17 @@ function Navbar() {
           </li>
         )}
 
+        {user?.role === 'admin' && (
+          <li>
+            <NavLink
+              to='/admin/products'
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              Admin Products
+            </NavLink>
+          </li>
+        )}
+
         {!token ? (
           <li>
             <NavLink
