@@ -1,4 +1,5 @@
 const Product = require('../models/Product')
+const AppError = require('../utils/AppError')
 
 const getAllProducts = async () => {
   const products = await Product.find().populate('category')
@@ -22,13 +23,22 @@ const createProduct = async (productData) => {
 const updateProduct = async (id, updates) => {
   const updatedProduct = await Product.findByIdAndUpdate(id, updates, {
     new: true,
+    runValidators: true,
   })
+
+  if (!updatedProduct) {
+    throw new AppError('Product not found', 404)
+  }
 
   return updatedProduct
 }
 
 const deleteProduct = async (id) => {
   const deletedProduct = await Product.findByIdAndDelete(id)
+
+  if (!deletedProduct) {
+    throw new AppError('Product not found', 404)
+  }
 
   return deletedProduct
 }
