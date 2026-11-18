@@ -32,8 +32,6 @@ import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import LogoutPage from './pages/LogoutPage'
 
-import Counter from './features/counter/Counter'
-
 import { getCart } from './api/cartApi'
 import { getProfile, getStoredToken } from './api/authApi'
 
@@ -156,8 +154,6 @@ function App() {
 
   return (
     <>
-      <Counter />
-
       <Routes>
         <Route path='/' element={<HomePage />} />
 
