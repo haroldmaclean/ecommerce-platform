@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux'
 import {
   getProducts,
   createProduct,
+  updateProduct,
+  deleteProduct,
   uploadProductImage,
 } from '../api/productApi'
 
@@ -26,6 +28,9 @@ function AdminProductsPage() {
   })
 
   const [image, setImage] = useState(null)
+
+  const [editingProduct, setEditingProduct] = useState(null)
+  const [deletingProductId, setDeletingProductId] = useState(null)
 
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
@@ -87,6 +92,44 @@ function AdminProductsPage() {
     }))
   }
 
+  async function handleDelete(product) {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${product.name}"?`,
+    )
+
+    if (!confirmed) return
+
+    try {
+      setDeletingProductId(product._id)
+      setFormError('')
+      setSuccessMessage('')
+
+      await deleteProduct(token, product._id)
+
+      setProducts((current) =>
+        current.filter((item) => item._id !== product._id),
+      )
+
+      if (editingProduct?._id === product._id) {
+        setEditingProduct(null)
+        setFormData({
+          name: '',
+          price: '',
+          description: '',
+          category: '',
+          stock: '',
+        })
+        setImage(null)
+      }
+
+      setSuccessMessage('Product deleted successfully!')
+    } catch (error) {
+      setFormError(error.message || 'Failed to delete product.')
+    } finally {
+      setDeletingProductId(null)
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
 
@@ -113,12 +156,24 @@ function AdminProductsPage() {
         ...(imageUrl && { imageUrl }),
       }
 
-      // 3. Create the product
-      const newProduct = await createProduct(token, productData)
+      // 3. Create or update the product
+      if (editingProduct) {
+        const updatedProduct = await updateProduct(
+          token,
+          editingProduct._id,
+          productData,
+        )
 
-      // 4. Update the displayed product list
-      setProducts((current) => [newProduct, ...current])
+        setProducts((current) =>
+          current.map((product) =>
+            product._id === updatedProduct._id ? updatedProduct : product,
+          ),
+        )
+      } else {
+        const newProduct = await createProduct(token, productData)
 
+        setProducts((current) => [newProduct, ...current])
+      }
       // 5. Reset the form
       setFormData({
         name: '',
@@ -129,14 +184,38 @@ function AdminProductsPage() {
       })
 
       setImage(null)
+      setEditingProduct(null)
       form.reset()
 
-      setSuccessMessage('Product created successfully!')
+      setSuccessMessage(
+        editingProduct
+          ? 'Product updated successfully!'
+          : 'Product created successfully!',
+      )
     } catch (error) {
       setFormError(error.message || 'Failed to create product.')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function handleEdit(product) {
+    setEditingProduct(product)
+
+    setFormData({
+      name: product.name,
+      price: String(product.price),
+      description: product.description || '',
+      category:
+        typeof product.category === 'object'
+          ? product.category._id
+          : product.category || '',
+      stock: String(product.stock),
+    })
+
+    setImage(null)
+    setFormError('')
+    setSuccessMessage('')
   }
 
   if (loading) {
@@ -152,7 +231,7 @@ function AdminProductsPage() {
       <h2>Admin - Product Management</h2>
 
       <form onSubmit={handleSubmit}>
-        <h3>Add New Product</h3>
+        <h3>{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
 
         <label>
           Product Name
@@ -233,7 +312,13 @@ function AdminProductsPage() {
         {successMessage && <p role='status'>{successMessage}</p>}
 
         <button type='submit' disabled={submitting || !token}>
-          {submitting ? 'Creating...' : 'Create Product'}
+          {submitting
+            ? editingProduct
+              ? 'Updating...'
+              : 'Creating...'
+            : editingProduct
+              ? 'Update Product'
+              : 'Create Product'}
         </button>
       </form>
 
@@ -246,6 +331,17 @@ function AdminProductsPage() {
         products.map((product) => (
           <article key={product._id}>
             <h3>{product.name}</h3>
+            <button type='button' onClick={() => handleEdit(product)}>
+              Edit
+            </button>
+
+            <button
+              type='button'
+              onClick={() => handleDelete(product)}
+              disabled={deletingProductId === product._id}
+            >
+              {deletingProductId === product._id ? 'Deleting...' : 'Delete'}
+            </button>
 
             {product.imageUrl && (
               <img src={product.imageUrl} alt={product.name} width='120' />

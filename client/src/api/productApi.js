@@ -63,3 +63,43 @@ export async function createProduct(token, productData) {
 
   return data
 }
+
+export async function updateProduct(token, id, productData) {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(productData),
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to update product')
+    error.status = response.status
+    throw error
+  }
+
+  return data
+}
+
+export async function deleteProduct(token, id) {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    const error = new Error(data.message || 'Failed to delete product')
+    error.status = response.status
+    throw error
+  }
+
+  return data
+}
