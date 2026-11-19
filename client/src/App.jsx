@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
+import Navbar from './components/Navbar'
+
 import {
   cartLoadStarted,
   cartLoadFailed,
@@ -154,6 +156,8 @@ function App() {
 
   return (
     <>
+      <Navbar />
+
       <Routes>
         <Route path='/' element={<HomePage />} />
 
