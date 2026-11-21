@@ -43,41 +43,70 @@ function OrdersPage() {
   }, [token])
 
   if (loading) {
-    return <p>Loading your orders...</p>
+    return (
+      <main className='page-container'>
+        <p className='orders-message'>Loading your orders...</p>
+      </main>
+    )
   }
 
   if (error) {
-    return <p role='alert'>{error}</p>
+    return (
+      <main className='page-container'>
+        <p className='orders-message orders-message--error' role='alert'>
+          {error}
+        </p>
+      </main>
+    )
   }
 
   if (orders.length === 0) {
     return (
-      <section>
-        <h2>My Orders</h2>
-        <p>You haven't placed any orders yet.</p>
-        <Link to='/products'>Browse products</Link>
-      </section>
+      <main className='page-container'>
+        <h1>My Orders</h1>
+        <div className='orders-empty'>
+          <p>You haven't placed any orders yet.</p>
+          <Link className='orders-link' to='/products'>
+            Browse products
+          </Link>
+        </div>
+      </main>
     )
   }
 
   return (
-    <section>
-      <h2>My Orders</h2>
+    <main className='page-container'>
+      <h1>My Orders</h1>
+      <div className='orders-list'>
+        {orders.map((order) => (
+          <article className='order-card' key={order._id}>
+            <div className='order-card__header'>
+              <h2>Order #{order._id}</h2>
+              <span
+                className={`order-card__status order-card__status--${order.status}`}
+              >
+                {order.status}
+              </span>
+            </div>
 
-      {orders.map((order) => (
-        <article key={order._id}>
-          <h3>Order #{order._id}</h3>
+            <div className='order-card__details'>
+              <p>
+                <span>Date placed</span>
+                {new Date(order.createdAt).toLocaleDateString()}
+              </p>
 
-          <p>Date: {new Date(order.createdAt).toLocaleDateString()}</p>
+              <p>
+                <span>Total</span>R{order.totalAmount.toFixed(2)}
+              </p>
+            </div>
 
-          <p>Status: {order.status}</p>
-
-          <p>Total: R{order.totalAmount.toFixed(2)}</p>
-
-          <Link to={`/orders/${order._id}`}>View order</Link>
-        </article>
-      ))}
-    </section>
+            <Link className='orders-link' to={`/orders/${order._id}`}>
+              View order
+            </Link>
+          </article>
+        ))}
+      </div>
+    </main>
   )
 }
 

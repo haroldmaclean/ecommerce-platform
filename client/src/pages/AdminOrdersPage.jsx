@@ -77,7 +77,7 @@ function AdminOrdersPage() {
   }
 
   return (
-    <section>
+    <main className='page-container'>
       <h2>Admin - Order Management</h2>
 
       <p>Total orders: {orders.length}</p>
@@ -128,7 +128,7 @@ function AdminOrdersPage() {
           </article>
         ))
       )}
-    </section>
+    </main>
   )
 }
 

@@ -45,50 +45,101 @@ function OrderDetailsPage() {
   }, [token, orderId])
 
   if (loading) {
-    return <p>Loading order details...</p>
+    return (
+      <main className='page-container'>
+        <p className='order-details-message'>Loading order details...</p>
+      </main>
+    )
   }
 
   if (error) {
     return (
-      <section>
-        <p role='alert'>{error}</p>
-        <Link to='/orders'>Back to My Orders</Link>
-      </section>
+      <main className='page-container'>
+        <p
+          className='order-details-message order-details-message--error'
+          role='alert'
+        >
+          {error}
+        </p>
+        <Link className='orders-link' to='/orders'>
+          Back to My Orders
+        </Link>
+      </main>
     )
   }
 
   if (!order) {
-    return <p>Order not found.</p>
+    return (
+      <main className='page-container'>
+        <p className='order-details-message'>Order not found.</p>
+        <Link className='orders-link' to='/orders'>
+          Back to My Orders
+        </Link>
+      </main>
+    )
   }
 
   return (
-    <section>
-      <h2>Order Details</h2>
+    <main className='page-container'>
+      <h1>Order Details</h1>
 
-      <p>Order ID: {order._id}</p>
+      <section className='order-details-card'>
+        <div className='order-details-card__header'>
+          <div>
+            <span className='order-details-label'>Order ID</span>
+            <p className='order-details-id'>{order._id}</p>
+          </div>
 
-      <p>Date: {new Date(order.createdAt).toLocaleString()}</p>
+          <span
+            className={`order-card__status order-card__status--${order.status}`}
+          >
+            {order.status}
+          </span>
+        </div>
 
-      <p>Status: {order.status}</p>
+        <p className='order-details-date'>
+          <span>Date placed</span>
+          {new Date(order.createdAt).toLocaleString()}
+        </p>
+      </section>
 
-      <h3>Items</h3>
+      <section className='order-details-items'>
+        <h2>Items</h2>
 
-      {order.items.map((item, index) => (
-        <article key={`${item.product}-${index}`}>
-          <h4>{item.name}</h4>
+        {order.items.map((item, index) => (
+          <article
+            className='order-details-item'
+            key={`${item.product}-${index}`}
+          >
+            <h3>{item.name}</h3>
 
-          <p>Price: R{item.price.toFixed(2)}</p>
+            <div className='order-details-item__row'>
+              <span>Price</span>
+              <span>R{item.price.toFixed(2)}</span>
+            </div>
 
-          <p>Quantity: {item.quantity}</p>
+            <div className='order-details-item__row'>
+              <span>Quantity</span>
+              <span>{item.quantity}</span>
+            </div>
 
-          <p>Subtotal: R{(item.price * item.quantity).toFixed(2)}</p>
-        </article>
-      ))}
+            <div className='order-details-item__row'>
+              <span>Subtotal</span>
+              <span>R{(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+          </article>
+        ))}
 
-      <h3>Total: R{order.totalAmount.toFixed(2)}</h3>
+        <div className='order-details-total'>
+          <span>Total</span>
+          <strong>R{order.totalAmount.toFixed(2)}</strong>
+        </div>
+      </section>
 
-      <Link to='/orders'>Back to My Orders</Link>
-    </section>
+      <Link className='orders-link order-details-back' to='/orders'>
+        Back to My Orders
+      </Link>
+    </main>
   )
 }
 

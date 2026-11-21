@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+
 import { useDispatch, useSelector } from 'react-redux'
 
 import { updateQuantity, removeItem, setCart } from '../features/cart/cartSlice'
@@ -112,7 +114,7 @@ function CartPage({ onRetry }) {
   }, 0)
 
   return (
-    <main>
+    <main className='page-container'>
       <h1>Your Cart</h1>
 
       {cartStatus === 'loading' && <p>Loading your cart...</p>}
@@ -128,66 +130,104 @@ function CartPage({ onRetry }) {
       {cartStatus === 'succeeded' && (
         <>
           <p>Cart items: {cart.length}</p>
-          <p>Cart total: ${cartTotal}</p>
+          <p>Cart total: R{cartTotal.toFixed(2)}</p>
 
           {cart.length === 0 ? (
             <p>Your cart is empty.</p>
           ) : (
-            <div>
-              {cart.map((item) => {
-                const productId = item.product._id
+            <div className='cart-layout'>
+              <div className='cart-items'>
+                {cart.map((item) => {
+                  const productId = item.product._id
 
-                return (
-                  <div key={productId}>
-                    <h2>{item.product.name}</h2>
+                  return (
+                    <article className='cart-item' key={productId}>
+                      <div className='cart-item__image'>
+                        {item.product.imageUrl ? (
+                          <img
+                            src={item.product.imageUrl}
+                            alt={item.product.name}
+                            loading='lazy'
+                          />
+                        ) : (
+                          <div className='cart-item__image-placeholder'>
+                            No image available
+                          </div>
+                        )}
+                      </div>
+                      <div className='cart-item__content'>
+                        <h2>{item.product.name}</h2>
 
-                    <p>Price: ${item.product.price}</p>
+                        <p>Price: R{item.product.price.toFixed(2)}</p>
 
-                    <div>
-                      <button
-                        onClick={() =>
-                          handleQuantityChange(productId, item.quantity - 1)
-                        }
-                        disabled={
-                          item.quantity <= 1 || updatingProducts[productId]
-                        }
-                      >
-                        −
-                      </button>
+                        <div>
+                          <button
+                            onClick={() =>
+                              handleQuantityChange(productId, item.quantity - 1)
+                            }
+                            disabled={
+                              item.quantity <= 1 || updatingProducts[productId]
+                            }
+                          >
+                            −
+                          </button>
 
-                      <span> {item.quantity} </span>
+                          <span> {item.quantity} </span>
 
-                      <button
-                        onClick={() =>
-                          handleQuantityChange(productId, item.quantity + 1)
-                        }
-                        disabled={
-                          item.quantity >= item.product.stock ||
-                          updatingProducts[productId]
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
+                          <button
+                            onClick={() =>
+                              handleQuantityChange(productId, item.quantity + 1)
+                            }
+                            disabled={
+                              item.quantity >= item.product.stock ||
+                              updatingProducts[productId]
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
 
-                    {quantityErrors[productId] && (
-                      <p role='alert'>{quantityErrors[productId]}</p>
-                    )}
+                        {quantityErrors[productId] && (
+                          <p role='alert'>{quantityErrors[productId]}</p>
+                        )}
 
-                    {updatingProducts[productId] && <p>Updating quantity...</p>}
+                        {updatingProducts[productId] && (
+                          <p>Updating quantity...</p>
+                        )}
 
-                    <button
-                      onClick={() => handleRemoveFromCart(productId)}
-                      disabled={removingProducts[productId]}
-                    >
-                      {removingProducts[productId] ? 'Removing...' : 'Remove'}
-                    </button>
-                    {removeErrors[productId] && (
-                      <p role='alert'>{removeErrors[productId]}</p>
-                    )}
-                  </div>
-                )
-              })}
+                        <button
+                          onClick={() => handleRemoveFromCart(productId)}
+                          disabled={removingProducts[productId]}
+                        >
+                          {removingProducts[productId]
+                            ? 'Removing...'
+                            : 'Remove'}
+                        </button>
+                        {removeErrors[productId] && (
+                          <p role='alert'>{removeErrors[productId]}</p>
+                        )}
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+              <aside className='cart-summary'>
+                <h2>Order Summary</h2>
+
+                <div className='cart-summary__row'>
+                  <span>Subtotal</span>
+                  <strong>R{cartTotal.toFixed(2)}</strong>
+                </div>
+
+                <div className='cart-summary__row cart-summary__total'>
+                  <span>Total</span>
+                  <strong>R{cartTotal.toFixed(2)}</strong>
+                </div>
+
+                <Link to='/checkout' className='cart-summary__checkout'>
+                  Proceed to Checkout
+                </Link>
+              </aside>
             </div>
           )}
         </>

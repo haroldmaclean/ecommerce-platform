@@ -48,12 +48,12 @@ function ProductsPage() {
   }, [])
 
   return (
-    <main>
+    <main className='page-container'>
       <h1>Our Products</h1>
 
       <p>Total products: {products.length}</p>
 
-      <div>
+      <div className='products-grid'>
         {products.map((product) => (
           <div key={product._id}>
             <ProductCard product={product} onAddToCart={handleAddToCart} />

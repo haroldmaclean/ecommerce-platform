@@ -78,46 +78,69 @@ function ProductDetailsPage() {
   }, [productId])
 
   if (loading) {
-    return <p>Loading product details...</p>
+    return (
+      <main className='page-container'>
+        <p>Loading product details...</p>
+      </main>
+    )
   }
 
   if (error) {
     return (
-      <section>
+      <main className='page-container'>
         <p role='alert'>{error}</p>
         <Link to='/products'>Back to Products</Link>
-      </section>
+      </main>
     )
   }
 
   if (!product) {
-    return <p>Product not found.</p>
+    return (
+      <main className='page-container'>
+        <p>Product not found.</p>
+        <Link to='/products'>Back to Products</Link>
+      </main>
+    )
   }
 
   return (
-    <section>
-      <h1>{product.name}</h1>
+    <main className='page-container'>
+      <div className='product-details'>
+        <div className='product-details__image'>
+          {product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.name} />
+          ) : (
+            <div className='product-details__image-placeholder'>
+              No image available
+            </div>
+          )}
+        </div>
 
-      <p>Price: R{product.price.toFixed(2)}</p>
+        <div className='product-details__content'>
+          <h1>{product.name}</h1>
 
-      <p>Description: {product.description}</p>
+          <p className='product-details__price'>R{product.price.toFixed(2)}</p>
 
-      <p>Category: {product.category?.name || 'Uncategorized'}</p>
+          <p className='product-details__description'>{product.description}</p>
 
-      <p>Available stock: {product.stock - product.reservedStock}</p>
+          <p>Category: {product.category?.name || 'Uncategorized'}</p>
 
-      <button
-        onClick={handleAddToCart}
-        disabled={product.stock - (product.reservedStock || 0) <= 0}
-      >
-        Add to Cart
-      </button>
-      {cartMessage && <p role='status'>{cartMessage}</p>}
+          <p>Available stock: {product.stock - (product.reservedStock || 0)}</p>
 
-      {cartError && <p role='alert'>{cartError}</p>}
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock - (product.reservedStock || 0) <= 0}
+          >
+            Add to Cart
+          </button>
 
-      <Link to='/products'>Back to Products</Link>
-    </section>
+          {cartMessage && <p role='status'>{cartMessage}</p>}
+          {cartError && <p role='alert'>{cartError}</p>}
+
+          <Link to='/products'>Back to Products</Link>
+        </div>
+      </div>
+    </main>
   )
 }
 

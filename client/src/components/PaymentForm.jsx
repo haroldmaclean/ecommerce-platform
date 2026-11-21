@@ -49,14 +49,28 @@ function PaymentForm({ onPaymentSucceeded }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <PaymentElement />
+    <form className='payment-form' onSubmit={handleSubmit}>
+      <div className='payment-form__element'>
+        <PaymentElement />
+      </div>
 
-      {error && <p role='alert'>{error}</p>}
+      {error && (
+        <p className='checkout-message checkout-message--error' role='alert'>
+          {error}
+        </p>
+      )}
 
-      {message && <p role='status'>{message}</p>}
+      {message && (
+        <p className='checkout-message checkout-message--status' role='status'>
+          {message}
+        </p>
+      )}
 
-      <button type='submit' disabled={!stripe || !elements || loading}>
+      <button
+        className='checkout-action payment-form__submit'
+        type='submit'
+        disabled={!stripe || !elements || loading}
+      >
         {loading ? 'Processing payment...' : 'Pay now'}
       </button>
     </form>

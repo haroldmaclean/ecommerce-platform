@@ -227,7 +227,7 @@ function AdminProductsPage() {
   }
 
   return (
-    <section>
+    <main className='page-container'>
       <h2>Admin - Product Management</h2>
 
       <form onSubmit={handleSubmit}>
@@ -355,7 +355,7 @@ function AdminProductsPage() {
           </article>
         ))
       )}
-    </section>
+    </main>
   )
 }
 

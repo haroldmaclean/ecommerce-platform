@@ -6,10 +6,10 @@ function Navbar() {
   const user = useSelector((state) => state.auth.user)
 
   return (
-    <nav>
-      <h2>Our Store</h2>
+    <nav className='navbar'>
+      <h2 className='navbar__brand'>Our Store</h2>
 
-      <ul>
+      <ul className='navbar__links'>
         <li>
           <NavLink
             to='/'
@@ -82,14 +82,25 @@ function Navbar() {
         )}
 
         {!token ? (
-          <li>
-            <NavLink
-              to='/login'
-              className={({ isActive }) => (isActive ? 'active' : '')}
-            >
-              Login
-            </NavLink>
-          </li>
+          <>
+            <li>
+              <NavLink
+                to='/login'
+                className={({ isActive }) => (isActive ? 'active' : '')}
+              >
+                Login
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink
+                to='/register'
+                className={({ isActive }) => (isActive ? 'active' : '')}
+              >
+                Register
+              </NavLink>
+            </li>
+          </>
         ) : (
           <li>
             <NavLink

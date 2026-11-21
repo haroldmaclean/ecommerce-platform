@@ -1,7 +1,7 @@
 function HomePage() {
   return (
     <>
-      <main>
+      <main className='page-container'>
         <h1>Welcome to our store</h1>
         <p>Discover our products.</p>
       </main>

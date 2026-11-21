@@ -136,13 +136,13 @@ function CheckoutPage() {
   }
 
   return (
-    <main>
+    <main className='page-container'>
       <h1>Checkout</h1>
 
       {!order && <p>Ready to create your order and proceed to payment?</p>}
 
       {order && (
-        <section>
+        <section className='checkout-card checkout-card--order'>
           <h2>Order details</h2>
           <p>Order ID: {order._id}</p>
           <p>Order status: {order.status}</p>
@@ -151,19 +151,32 @@ function CheckoutPage() {
       )}
 
       {payment && (
-        <section>
+        <section className='checkout-card checkout-card--payment'>
           <h2>Payment details</h2>
           <p>Payment status: {payment.status}</p>
           <p>Refund status: {payment.refundStatus}</p>
         </section>
       )}
 
-      {error && <p role='alert'>{error}</p>}
+      {error && (
+        <p className='checkout-message checkout-message--error' role='alert'>
+          {error}
+        </p>
+      )}
 
-      {verificationMessage && <p role='status'>{verificationMessage}</p>}
+      {verificationMessage && (
+        <p className='checkout-message checkout-message--status' role='status'>
+          {verificationMessage}
+        </p>
+      )}
 
       {!payment && (
-        <button type='button' onClick={handleCheckout} disabled={loading}>
+        <button
+          className='checkout-action'
+          type='button'
+          onClick={handleCheckout}
+          disabled={loading}
+        >
           {loading
             ? 'Processing...'
             : order
@@ -173,16 +186,22 @@ function CheckoutPage() {
       )}
 
       {clientSecret && (
-        <Elements
-          stripe={stripePromise}
-          options={{ clientSecret }}
-          key={payment?._id}
-        >
-          <PaymentForm onPaymentSucceeded={handlePaymentSucceeded} />
-        </Elements>
+        <div className='checkout-payment-form'>
+          <Elements
+            stripe={stripePromise}
+            options={{ clientSecret }}
+            key={payment?._id}
+          >
+            <PaymentForm onPaymentSucceeded={handlePaymentSucceeded} />
+          </Elements>
+        </div>
       )}
 
-      {verifying && <p>Verifying payment with the server...</p>}
+      {verifying && (
+        <p className='checkout-message checkout-message--status'>
+          Verifying payment with the server...
+        </p>
+      )}
     </main>
   )
 }

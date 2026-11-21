@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { Eye, EyeOff } from 'lucide-react'
+
 import { useSelector, useDispatch } from 'react-redux'
 
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -14,6 +16,7 @@ import { loginWorkflow } from '../workflows/authWorkflow'
 function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const cart = useSelector((state) => state.cart.items)
 
@@ -62,30 +65,53 @@ function LoginPage() {
   }
 
   return (
-    <main>
-      <h1>Login</h1>
+    <main className='page-container auth-page'>
+      <section className='auth-card'>
+        <h1>Welcome Back</h1>
+        <p className='auth-card__description'>
+          Sign in to access your account and orders.
+        </p>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email</label>
-          <input
-            type='email'
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </div>
+        <form className='auth-form' onSubmit={handleSubmit}>
+          <div className='auth-form__field'>
+            <label htmlFor='login-email'>Email</label>
+            <input
+              id='login-email'
+              type='email'
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </div>
 
-        <div>
-          <label>Password</label>
-          <input
-            type='password'
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </div>
+          <div className='auth-form__field'>
+            <label htmlFor='login-password'>Password</label>
 
-        <button type='submit'>Login</button>
-      </form>
+            <div className='auth-password-wrapper'>
+              <input
+                id='login-password'
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+
+              <button
+                type='button'
+                className='auth-password-toggle'
+                onClick={() => setShowPassword((previous) => !previous)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+          <button className='auth-form__submit' type='submit'>
+            Login
+          </button>
+        </form>
+      </section>
     </main>
   )
 }
