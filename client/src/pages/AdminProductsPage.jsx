@@ -229,98 +229,110 @@ function AdminProductsPage() {
   return (
     <main className='page-container'>
       <h2>Admin - Product Management</h2>
+      <section className='admin-product-form'>
+        <form className='admin-product-form__form' onSubmit={handleSubmit}>
+          <h3 className='admin-product-form__title'>
+            {editingProduct ? 'Edit Product' : 'Add New Product'}
+          </h3>
 
-      <form onSubmit={handleSubmit}>
-        <h3>{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
+          <label className='admin-product-form__field'>
+            Product Name
+            <input
+              className='admin-product-form__input'
+              type='text'
+              name='name'
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
 
-        <label>
-          Product Name
-          <input
-            type='text'
-            name='name'
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-          />
-        </label>
+          <label className='admin-product-form__field'>
+            Price (R)
+            <input
+              className='admin-product-form__input'
+              type='number'
+              name='price'
+              min='0.01'
+              step='0.01'
+              value={formData.price}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
 
-        <label>
-          Price (R)
-          <input
-            type='number'
-            name='price'
-            min='0.01'
-            step='0.01'
-            value={formData.price}
-            onChange={handleInputChange}
-            required
-          />
-        </label>
+          <label className='admin-product-form__field'>
+            Description
+            <textarea
+              className='admin-product-form__textarea'
+              name='description'
+              value={formData.description}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
 
-        <label>
-          Description
-          <textarea
-            name='description'
-            value={formData.description}
-            onChange={handleInputChange}
-            required
-          />
-        </label>
+          <label className='admin-product-form__field'>
+            Category
+            <select
+              name='category'
+              value={formData.category}
+              onChange={handleInputChange}
+              required
+            >
+              <option value=''>Select category</option>
 
-        <label>
-          Category
-          <select
-            name='category'
-            value={formData.category}
-            onChange={handleInputChange}
-            required
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className='admin-product-form__field'>
+            Stock Quantity
+            <input
+              className='admin-product-form__input'
+              type='number'
+              name='stock'
+              min='0'
+              step='1'
+              value={formData.stock}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+
+          <label className='admin-product-form__field'>
+            Product Image (optional)
+            <input
+              className='admin-product-form__input'
+              type='file'
+              accept='image/*'
+              onChange={(event) => setImage(event.target.files?.[0] || null)}
+            />
+          </label>
+
+          {formError && <p role='alert'>{formError}</p>}
+
+          {successMessage && <p role='status'>{successMessage}</p>}
+
+          <button
+            className='admin-product-form__submit'
+            type='submit'
+            disabled={submitting || !token}
           >
-            <option value=''>Select category</option>
-
-            {categories.map((category) => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Stock Quantity
-          <input
-            type='number'
-            name='stock'
-            min='0'
-            step='1'
-            value={formData.stock}
-            onChange={handleInputChange}
-            required
-          />
-        </label>
-
-        <label>
-          Product Image (optional)
-          <input
-            type='file'
-            accept='image/*'
-            onChange={(event) => setImage(event.target.files?.[0] || null)}
-          />
-        </label>
-
-        {formError && <p role='alert'>{formError}</p>}
-
-        {successMessage && <p role='status'>{successMessage}</p>}
-
-        <button type='submit' disabled={submitting || !token}>
-          {submitting
-            ? editingProduct
-              ? 'Updating...'
-              : 'Creating...'
-            : editingProduct
-              ? 'Update Product'
-              : 'Create Product'}
-        </button>
-      </form>
+            {submitting
+              ? editingProduct
+                ? 'Updating...'
+                : 'Creating...'
+              : editingProduct
+                ? 'Update Product'
+                : 'Create Product'}
+          </button>
+        </form>
+      </section>
 
       <p>Total products: {products.length}</p>
       <p>Total categories: {categories.length}</p>
