@@ -334,38 +334,61 @@ function AdminProductsPage() {
         </form>
       </section>
 
-      <p>Total products: {products.length}</p>
-      <p>Total categories: {categories.length}</p>
+      <div className='admin-products-summary'>
+        <p>Total products: {products.length}</p>
+        <p>Total categories: {categories.length}</p>
+      </div>
 
       {products.length === 0 ? (
         <p>No products found.</p>
       ) : (
-        products.map((product) => (
-          <article key={product._id}>
-            <h3>{product.name}</h3>
-            <button type='button' onClick={() => handleEdit(product)}>
-              Edit
-            </button>
+        <section className='admin-products-list'>
+          {products.map((product) => (
+            <article className='admin-product-card' key={product._id}>
+              <div className='admin-product-card__image'>
+                {product.imageUrl && (
+                  <img src={product.imageUrl} alt={product.name} />
+                )}
+              </div>
 
-            <button
-              type='button'
-              onClick={() => handleDelete(product)}
-              disabled={deletingProductId === product._id}
-            >
-              {deletingProductId === product._id ? 'Deleting...' : 'Delete'}
-            </button>
+              <div className='admin-product-card__content'>
+                <h3>{product.name}</h3>
 
-            {product.imageUrl && (
-              <img src={product.imageUrl} alt={product.name} width='120' />
-            )}
+                <p className='admin-product-card__price'>
+                  R{product.price.toFixed(2)}
+                </p>
 
-            <p>Price: R{product.price.toFixed(2)}</p>
-            <p>Category: {getCategoryName(product)}</p>
-            <p>Stock: {product.stock}</p>
-            <p>Reserved stock: {product.reservedStock}</p>
-            <p>{product.description}</p>
-          </article>
-        ))
+                <p>Category: {getCategoryName(product)}</p>
+                <p>Stock: {product.stock}</p>
+                <p>Reserved stock: {product.reservedStock}</p>
+                <p className='admin-product-card__description'>
+                  {product.description}
+                </p>
+
+                <div className='admin-product-card__actions'>
+                  <button
+                    className='admin-product-card__edit'
+                    type='button'
+                    onClick={() => handleEdit(product)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className='admin-product-card__delete'
+                    type='button'
+                    onClick={() => handleDelete(product)}
+                    disabled={deletingProductId === product._id}
+                  >
+                    {deletingProductId === product._id
+                      ? 'Deleting...'
+                      : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </section>
       )}
     </main>
   )
